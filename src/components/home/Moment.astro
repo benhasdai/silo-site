@@ -1,0 +1,59 @@
+---
+// Cinematic interlude (R5) — pizza dough stretched over semolina, overhead.
+// The flame cliché is retired (user: "I can't post another restaurant's
+// flames"); this is craft — the daily making of the dough.
+// Full-bleed footage that settles as you pass (scale scrub in home.ts).
+// Wordless; decorative for AT — scroll continues #hero → #club-gift around it.
+---
+<section class="moment" data-moment aria-hidden="true">
+  <div class="moment-media">
+    <video
+      data-video
+      data-moment-video
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="/media/moment-dough-poster.jpg"
+      tabindex="-1"
+    >
+      <source data-src="/media/moment-dough.mp4" type="video/mp4" />
+    </video>
+    <div class="moment-scrim"></div>
+  </div>
+</section>
+
+<style>
+  .moment {
+    position: relative;
+    block-size: 72svh;
+    min-block-size: 24rem;
+    overflow: hidden;
+  }
+
+  .moment-media {
+    position: absolute;
+    inset: 0;
+  }
+  .moment-media video {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    /* landscape overhead — the dough + semolina tray sit centre-frame */
+    object-position: center 45%;
+    background: var(--color-ground-sunk); /* R7.1-C: poster fallback fixed dark */
+    will-change: transform;
+  }
+  /* R7.1-C: a deeper grade so the band reads as graded INTO the espresso ground,
+     not floating as a bright rectangle on a dark page. Mixed on --color-ground-sunk
+     (fixed dark) — --color-text is now cream and would wash the footage pale. */
+  .moment-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      color-mix(in srgb, var(--color-ground-sunk) 24%, transparent),
+      color-mix(in srgb, var(--color-ground-sunk) 42%, transparent)
+    );
+  }
+</style>

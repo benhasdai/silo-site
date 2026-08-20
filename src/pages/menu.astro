@@ -1,0 +1,14 @@
+---
+/* Task 11 — SILO menu page (Hebrew, default locale, unprefixed route).
+   R9 i18n: page body now lives in components/menu/MenuPage.astro, shared
+   with /en/menu and /ru/menu — see that file for the actual markup/logic. */
+import Layout from '../layouts/Layout.astro';
+import MenuPage from '../components/menu/MenuPage.astro';
+import { UI } from '../i18n/ui-strings';
+
+const t = UI.he.menu;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="menu" navMode="static" locale="he">
+  <MenuPage locale="he" />
+</Layout>

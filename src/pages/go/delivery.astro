@@ -1,0 +1,21 @@
+---
+// SILO — static /go/delivery redirect (R14 GitHub-Pages migration, 2026-07-15).
+// Baked destination (was Netlify go.mts DEST_DELIVERY). This is the ONLY /go/*
+// link actually wired in the UI (Nav delivery). Edit + rebuild to swap.
+const DEST = 'https://orders.beecommcloud.com/#/init/68257fc77a97a4c059557bcc';
+---
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content={`0; url=${DEST}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={DEST} />
+    <title>SILO — מעבר להזמנת משלוח</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(DEST)});`}></script>
+  </head>
+  <body style="font-family:system-ui,sans-serif;background:#fffaed;color:#241813;display:grid;place-items:center;min-height:100vh;margin:0;">
+    <p>מעבירים אתכם להזמנת משלוח… <a href={DEST}>המשך ידני</a></p>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+---
+/* Task 11 — sticky filter row: dietary toggles (vegan / gluten-free, icon-driven)
+   + restaurant category chips in one RTL horizontal-scroll track.
+   No-JS baseline: dietary toggles stay hidden; chips act as in-page anchors.
+   menu.ts reveals the toggles and upgrades chips to filter buttons. */
+import MenuIcon from './MenuIcon.astro';
+import { UI } from '../../i18n/ui-strings';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Cat {
+  id: string;
+  label: string;
+}
+interface Props {
+  categories: Cat[];
+  locale?: Locale;
+}
+
+const { categories, locale = DEFAULT_LOCALE } = Astro.props;
+const t = UI[locale].menu;
+---
+
+<div class="menu-filters" data-menu-filters data-active-tab="restaurant">
+  <div class="container filters-track">
+    <div class="filters-dietary" role="group" aria-label={t.filters.dietaryGroupAria} data-dietary hidden>
+      <button type="button" class="chip chip-diet" data-diet="vegan">
+        <MenuIcon name="vegan" />
+        {t.legend.vegan}
+      </button>
+      <button type="button" class="chip chip-diet" data-diet="gf">
+        <MenuIcon name="gluten_free" />
+        {t.legend.gluten_free}
+      </button>
+    </div>
+    <span class="filters-sep" aria-hidden="true" data-filters-sep hidden></span>
+    <nav class="filters-cats" aria-label={t.filters.categoriesNavAria}>
+      <ul class="cat-chips" role="list">
+        <li>
+          <a class="chip chip-cat is-active" href="#panel-restaurant" data-cat="all">{t.filters.allChip}</a>
+        </li>
+        {
+          categories.map((c) => (
+            <li>
+              <a class="chip chip-cat" href={`#cat-${c.id}`} data-cat={c.id}>
+                {c.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</div>

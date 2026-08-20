@@ -1,0 +1,751 @@
+---
+/* R9 i18n — the full /menu page body, parameterized by locale so the three
+   real routes (/menu he, /en/menu, /ru/menu — src/pages/**) share one
+   implementation instead of tripling task 11's markup. Owns the same styles
+   menu.astro always did; only the locale plumbing is new. */
+import MenuTabs from './MenuTabs.astro';
+import MenuFilters from './MenuFilters.astro';
+import MenuSection from './MenuSection.astro';
+import MenuLegend from './MenuLegend.astro';
+import { getMenuItems, getNote } from '../../lib/content';
+import { getTabs, getCategories } from './menu-data';
+import { translateNote } from '../../i18n/menu-content';
+import { UI } from '../../i18n/ui-strings';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = UI[locale].menu;
+
+const restaurantItems = getMenuItems('restaurant');
+const businessItems = getMenuItems('business');
+const brunchItems = getMenuItems('brunch');
+const cocktailItems = getMenuItems('cocktails');
+const wineItems = getMenuItems('wine');
+const dessertItems = getMenuItems('desserts');
+
+const wineNote = translateNote('wine_pouring_note', getNote('wine_pouring_note'), locale);
+const businessNote = translateNote('business_price_note', getNote('business_price_note'), locale);
+const allergenNote = translateNote('allergen_note', getNote('allergen_note'), locale);
+const priceNote = translateNote('price_vat_note', getNote('price_vat_note'), locale);
+
+const TABS = getTabs(locale);
+const CATEGORIES = getCategories(locale);
+
+// Restaurant categories in locked order — only those the data actually fills.
+const groups = CATEGORIES.map((c) => ({
+  id: c.id,
+  label: c.label,
+  note: c.id === 'wine' && wineNote ? wineNote : undefined,
+  items: restaurantItems.filter((i) => i.category === c.id),
+})).filter((g) => g.items.length > 0);
+
+const flatTabs = [
+  { id: 'business', items: businessItems },
+  { id: 'brunch', items: brunchItems },
+  { id: 'cocktails', items: cocktailItems },
+  { id: 'wine', items: wineItems },
+  { id: 'desserts', items: dessertItems },
+];
+
+const tabLabel = (id: string) => TABS.find((tab) => tab.id === id)?.label ?? id;
+
+// SEO: schema.org Menu built from the same snapshot.
+const menuSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Menu',
+  name: t.h1,
+  inLanguage: locale,
+  hasMenuSection: [
+    ...groups.map((g) => ({ name: g.label, items: g.items })),
+    ...flatTabs.map((tab) => ({ name: tabLabel(tab.id), items: tab.items })),
+  ]
+    .filter((s) => s.items.length > 0)
+    .map((s) => ({
+      '@type': 'MenuSection',
+      name: s.name,
+      hasMenuItem: s.items.map((i) => ({
+        '@type': 'MenuItem',
+        name: i.name_he,
+        ...(i.desc_he ? { description: i.desc_he } : {}),
+        offers: { '@type': 'Offer', price: String(i.price), priceCurrency: 'ILS' },
+        ...(i.vegan || i.gluten_free
+          ? {
+              suitableForDiet: [
+                ...(i.vegan ? ['https://schema.org/VeganDiet'] : []),
+                ...(i.gluten_free ? ['https://schema.org/GlutenFreeDiet'] : []),
+              ],
+            }
+          : {}),
+      })),
+    })),
+};
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(menuSchema)}></script>
+
+<div class="menu-page" data-menu-root>
+  <header class="menu-header container">
+    <h1 class="menu-title">{t.h1}</h1>
+    <span class="menu-title-rule" aria-hidden="true"></span>
+  </header>
+
+  <MenuTabs tabs={TABS} active="restaurant" locale={locale} />
+  <MenuFilters categories={groups.map((g) => ({ id: g.id, label: g.label }))} locale={locale} />
+
+  <div class="menu-panels container" data-menu-panels>
+    <MenuSection id="restaurant" title={tabLabel('restaurant')} groups={groups} locale={locale} />
+    {flatTabs.map((tab) => (
+      <MenuSection
+        id={tab.id}
+        title={tabLabel(tab.id)}
+        items={tab.items}
+        note={tab.id === 'business' ? businessNote : undefined}
+        locale={locale}
+      />
+    ))}
+  </div>
+
+  <div class="container">
+    <MenuLegend allergenNote={allergenNote} priceNote={priceNote} locale={locale} />
+  </div>
+</div>
+
+<script src="../../scripts/menu.ts"></script>
+<style is:global>
+  /* ============================================================
+     SILO menu page (task 11) — warm printed-menu texture through
+     typography and air. Palette tokens only; hairlines and shadows
+     are alpha mixes of the navy token (no new hues).
+     ============================================================ */
+
+  .menu-page {
+    --menu-hairline: color-mix(in srgb, var(--color-text) 15%, transparent);
+    --menu-hairline-strong: color-mix(in srgb, var(--color-text) 30%, transparent);
+    /* R7.1-C: the bar shadow must stay a fixed dark regardless of the ground flip
+       (--color-text is now cream and would render as a pale glow, not a shadow) */
+    --menu-bar-shadow: 0 -4px 24px color-mix(in srgb, var(--color-ground-sunk) 35%, transparent);
+    /* room the sticky filter row needs above anchored content (mobile) —
+       plus the persistent nav bar (R7.5), which every sticky row below it
+       must now also clear */
+    --menu-sticky-offset: calc(4.75rem + var(--nav-bar-height));
+    padding-block-start: var(--space-6);
+    padding-block-end: var(--space-16);
+  }
+  @media (min-width: 768px) {
+    .menu-page {
+      /* tabs (3.5rem) + filter row + breath + nav bar */
+      --menu-sticky-offset: calc(8.75rem + var(--nav-bar-height));
+      padding-block-start: var(--space-8);
+    }
+  }
+
+  /* ---------- header / masthead ---------- */
+  .menu-header {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+    margin-block-end: var(--space-6);
+  }
+  .menu-header-top {
+    inline-size: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .menu-eyebrow {
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-weight: var(--weight-heading);
+    font-size: var(--text-sm);
+    letter-spacing: 0.14em;
+  }
+  .menu-title {
+    font-weight: var(--weight-display);
+    font-size: var(--text-2xl);
+    line-height: 1.05;
+  }
+  .menu-title-rule {
+    inline-size: 56px;
+    block-size: 3px;
+    border-radius: 999px;
+    background: var(--color-warm-surface);
+  }
+  .menu-meta {
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-base);
+  }
+  @media (min-width: 768px) {
+    .menu-header {
+      margin-block-end: var(--space-8);
+    }
+    .menu-title {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  /* ---------- tab bar ---------- */
+  .menu-tabs {
+    position: sticky;
+    inset-block-start: var(--nav-bar-height);
+    z-index: 30;
+    background: var(--color-background);
+    border-block-end: 1px solid var(--menu-hairline);
+  }
+  .menu-tabs-list {
+    list-style: none;
+    margin: 0;
+    padding-block: 0;
+    padding-inline: var(--space-4);
+    max-inline-size: var(--content-max);
+    margin-inline: auto;
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, transparent, currentColor var(--space-4), currentColor calc(100% - var(--space-4)), transparent);
+  }
+  .menu-tabs-list::-webkit-scrollbar {
+    display: none;
+  }
+  .menu-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 52px;
+    padding: var(--space-2) var(--space-4);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-weight: var(--weight-heading);
+    font-size: var(--text-base);
+    white-space: nowrap;
+    border-block-end: 3px solid transparent;
+    transition:
+      color var(--dur-fast) var(--ease-smooth),
+      border-color var(--dur-fast) var(--ease-smooth);
+  }
+  .menu-tab:hover {
+    color: var(--color-text);
+  }
+  .menu-tab.is-active {
+    color: var(--color-text);
+    /* R7.1-C Option A: state indicators use cotto (3.34:1 on the ground, ≥3:1
+       UI) — red is reserved for filled buttons only */
+    border-block-end-color: var(--color-warm-surface);
+  }
+  @media (min-width: 768px) {
+    .menu-tabs-list {
+      justify-content: center;
+      gap: var(--space-6);
+      padding-inline: var(--space-6);
+    }
+    .menu-tab {
+      min-block-size: 3.5rem;
+    }
+  }
+
+  /* Mobile + JS: the tab bar docks to the bottom edge — one-handed thumb reach
+     at the table. (No-JS keeps the in-flow anchor bar at the top.) */
+  @media (max-width: 767px) {
+    .js-menu .menu-tabs {
+      position: fixed;
+      inset-block-start: auto;
+      inset-block-end: 0;
+      inset-inline: 0;
+      border-block-end: none;
+      border-block-start: 1px solid var(--menu-hairline);
+      box-shadow: var(--menu-bar-shadow);
+      padding-block-end: env(safe-area-inset-bottom, 0px);
+    }
+    .js-menu .menu-tabs-list {
+      gap: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+    .js-menu .menu-tabs-item {
+      flex: 1 1 0;
+      min-inline-size: 0;
+    }
+    .js-menu .menu-tab {
+      inline-size: 100%;
+      min-block-size: 56px;
+      padding: var(--space-1);
+      font-size: var(--text-sm);
+      line-height: 1.15;
+      white-space: normal;
+      text-align: center;
+      text-wrap: balance;
+      border-block-end: none;
+      border-block-start: 3px solid transparent;
+      /* was `anywhere` — broke single words mid-letter ("קוקטיילים" ->
+         "קוקטיילי"/"ם"); `normal` still lets 2-word labels wrap at the space,
+         which is all this was ever meant to do. */
+      overflow-wrap: normal;
+      hyphens: auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-inline-size: 0;
+    }
+    .js-menu .menu-tab.is-active {
+      /* R7.1-C Option A: cotto state indicator, matches the desktop tab bar */
+      border-block-start-color: var(--color-warm-surface);
+    }
+    /* keep the last items clear of the docked bar */
+    .js-menu .menu-page {
+      padding-block-end: calc(var(--space-24) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  /* ---------- filter row (dietary toggles + category chips) ---------- */
+  .menu-filters {
+    position: sticky;
+    /* no-JS: the tab bar is sticky just under the nav bar — ride just under it */
+    inset-block-start: calc(52px + 1px + var(--nav-bar-height));
+    z-index: 20;
+    background: var(--color-background);
+    padding-block: var(--space-2);
+  }
+  /* JS + mobile: tabs dock to the bottom, so the filter row is the sole
+     top-sticky element — it only needs to clear the nav bar itself */
+  @media (max-width: 767px) {
+    .js-menu .menu-filters {
+      inset-block-start: var(--nav-bar-height);
+    }
+  }
+  @media (min-width: 768px) {
+    .menu-filters,
+    .js-menu .menu-filters {
+      /* rides just under the sticky desktop tab bar (3.5rem + hairline), itself under the nav bar */
+      inset-block-start: calc(3.5rem + 1px + var(--nav-bar-height));
+      padding-block: var(--space-3);
+    }
+  }
+  .filters-track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* soft edge fade for the RTL scroll track — alpha mask, no colors involved */
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      currentColor var(--space-4),
+      currentColor calc(100% - var(--space-4)),
+      transparent
+    );
+  }
+  .filters-track::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .filters-track {
+      flex-wrap: wrap;
+      justify-content: center;
+      overflow: visible;
+      mask-image: none;
+    }
+  }
+  .filters-dietary {
+    display: flex;
+    gap: var(--space-2);
+    flex: none;
+  }
+  /* explicit: author display would otherwise beat the UA [hidden] rule */
+  .filters-dietary[hidden] {
+    display: none;
+  }
+  .filters-sep {
+    flex: none;
+    inline-size: 1px;
+    align-self: stretch;
+    margin-block: var(--space-2);
+    background: var(--menu-hairline-strong);
+  }
+  .filters-cats {
+    flex: none;
+  }
+  .cat-chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: var(--space-2);
+  }
+  @media (min-width: 768px) {
+    .filters-cats {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+    .cat-chips {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  /* chips are only shown for the tab they belong to */
+  .menu-filters:not([data-active-tab='restaurant']) .filters-cats,
+  .menu-filters:not([data-active-tab='restaurant']) .filters-sep {
+    display: none;
+  }
+
+  .chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: 44px;
+    padding: var(--space-1) var(--space-4);
+    border-radius: 999px;
+    border: 1px solid var(--menu-hairline-strong);
+    background: var(--color-ground-raised); /* R7.1-C: raised chip surface, per spec (was transparent) */
+    color: var(--color-text);
+    font-family: var(--font-family);
+    font-weight: var(--weight-heading);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-smooth),
+      color var(--dur-fast) var(--ease-smooth),
+      border-color var(--dur-fast) var(--ease-smooth);
+  }
+  a.chip,
+  a.chip:hover {
+    color: var(--color-text);
+  }
+  .chip:hover {
+    border-color: var(--color-text);
+  }
+  .chip .micon {
+    font-size: 1.15em;
+  }
+  /* active category — cotto surface, cream text (4.96:1). R7.1-C: text pinned to
+     --color-on-ground — --color-background is now the espresso ground and would
+     put dark-on-dark text on the cotto chip. */
+  .chip-cat.is-active {
+    background: var(--color-warm-surface);
+    border-color: var(--color-warm-surface);
+    color: var(--color-on-warm);
+  }
+  /* active dietary — sage surface, cream text (5.05:1, direction-agnostic — same
+     pair as the original cream-bg/sage-text spec). Same --color-on-ground fix. */
+  .chip-diet.is-active {
+    background: var(--color-text-secondary);
+    border-color: var(--color-text-secondary);
+    color: var(--color-on-warm);
+  }
+
+  /* ---------- panels ---------- */
+  .menu-panels {
+    scroll-margin-block-start: var(--menu-sticky-offset);
+  }
+  .menu-panel {
+    scroll-margin-block-start: var(--menu-sticky-offset);
+  }
+  .menu-panel[hidden] {
+    display: none;
+  }
+  .js-menu .menu-panel:not([hidden]) {
+    animation: menu-panel-in var(--dur-base) var(--ease-smooth) both;
+  }
+  @keyframes menu-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  /* No-JS: visible section mastheads separate the stacked menus.
+     With JS the active tab already says it — keep for AT only. */
+  .panel-title {
+    font-weight: var(--weight-display);
+    font-size: var(--text-xl);
+    text-align: center;
+    margin-block: var(--space-16) var(--space-4);
+  }
+  .menu-panel:first-child .panel-title {
+    margin-block-start: var(--space-6);
+  }
+  .js-menu .panel-title {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- category groups ---------- */
+  /* R8.4 spacing pass: separation lives on margin-block-END, never -start. A
+     top margin is fragile here — it (a) misaligns the two desktop columns
+     (a group at a column's top keeps its lead margin) and (b) survives on the
+     first *visible* group when filtering hides the DOM-first ones, opening a
+     chasm under the sticky filter bar. Trailing margin collapses away at every
+     container/column top, so both columns and every filter state start flush;
+     the initial air is one consistent value on the panel container below. */
+  .menu-group {
+    margin-block-end: var(--space-16);
+    scroll-margin-block-start: var(--menu-sticky-offset);
+    break-inside: avoid;
+  }
+  /* category head — Blender Black (900) for a real weight jump over the 700 dish
+     names, led by a short amber accent (surface use, iron rule) and closed by a
+     printed-menu section rule. This is the page's primary hierarchy cue. */
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-display);
+    letter-spacing: 0.005em;
+    line-height: 1.1;
+  }
+  .group-title::before {
+    content: '';
+    flex: none;
+    inline-size: var(--space-8);
+    block-size: 4px;
+    border-radius: 999px;
+    background: var(--color-warm-surface);
+  }
+  .group-title::after {
+    content: '';
+    flex: 1 1 auto;
+    block-size: 1px;
+    background: var(--menu-hairline);
+  }
+  .group-note {
+    margin-block-start: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-sm);
+  }
+  .group-note .micon {
+    flex: none;
+    font-size: 1.2em;
+  }
+
+  .panel-note {
+    margin-block-end: var(--space-4);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-sm);
+  }
+
+  .group-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    margin-block-start: var(--space-8);
+    display: grid;
+    gap: var(--space-8);
+  }
+  /* R8.4: the one, consistent breath between the sticky filter bar and the
+     first content — on the container, so it's identical across every tab and
+     every filter state (grouped or flat, all or single category). */
+  .panel-groups,
+  .panel-items {
+    padding-block-start: var(--space-12);
+  }
+  .panel-items {
+    max-inline-size: 44rem;
+    margin-inline: auto;
+    /* the flat list is also .group-items (heading→items gap = 32px); in a flat
+       tab there's no heading, so drop that margin — the 48px container padding
+       above is the single source of top air, matching the grouped panels. */
+    margin-block-start: 0;
+  }
+
+  /* desktop: two-column printed-menu flow within --content-max */
+  @media (min-width: 1024px) {
+    .panel-groups {
+      columns: 2;
+      column-gap: var(--space-24);
+    }
+  }
+  @media (min-width: 1280px) {
+    .panel-groups {
+      column-gap: var(--space-32);
+    }
+  }
+  /* filtered to one category — collapse to a single centered column so the
+     printed-menu flow never strands an empty half (menu.ts toggles the attr).
+     Overrides the multicol rules above at every width. */
+  .panel-groups[data-filtered] {
+    columns: auto;
+    max-inline-size: 44rem;
+    margin-inline: auto;
+  }
+
+  /* ---------- dish rows — classic printed-menu "name … price" ---------- */
+  .item-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: nowrap;
+  }
+  .item-name {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-heading);
+    line-height: 1.25;
+    min-inline-size: 0; /* long names wrap instead of shoving the price off the row */
+  }
+  /* the dotted leader carries the eye from dish to price. R7.1-C: mixed on
+     --color-on-ground-soft (warm stone) per spec — muted, not near-black, not
+     full-bright cream either. */
+  .item-leader {
+    flex: 1 1 auto;
+    min-inline-size: var(--space-6);
+    align-self: baseline;
+    border-block-end: 1px dotted color-mix(in srgb, var(--color-on-ground-soft) 55%, transparent);
+    transform: translateY(-0.28em);
+  }
+  .item-price {
+    flex: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-body);
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+  /* live-price patches land here — reserved width, no layout shift */
+  .price-num {
+    display: inline-block;
+    min-inline-size: 2ch;
+  }
+  .item-unit2 {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    border-inline-start: 1px solid var(--menu-hairline-strong);
+    padding-inline-start: var(--space-3);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-base);
+  }
+  .item-diet {
+    flex: none;
+    display: inline-flex;
+    gap: var(--space-1);
+    align-self: center;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: 1.125rem;
+  }
+  .item-desc {
+    margin-block-start: var(--space-1);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-base);
+    max-inline-size: 52ch;
+  }
+  .item-allergens {
+    white-space: nowrap;
+  }
+  .item-allergens .micon {
+    font-size: 1rem;
+    margin-inline-start: var(--space-2);
+    vertical-align: -0.15em;
+  }
+
+  /* ---------- icon primitive ---------- */
+  .micon {
+    display: inline-block;
+    inline-size: 1em;
+    block-size: 1em;
+    line-height: 1;
+  }
+  .micon svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  /* ---------- empty state / placeholder ---------- */
+  .panel-empty[hidden] {
+    display: none;
+  }
+  .panel-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-4);
+    text-align: center;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    padding-block: var(--space-12);
+  }
+  .panel-none {
+    text-align: center;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    padding-block: var(--space-12);
+    margin-inline: auto;
+  }
+
+  /* ---------- legend + standing notes ---------- */
+  .menu-footnotes {
+    margin-block-start: var(--space-16);
+    border-block-start: 1px solid var(--menu-hairline);
+    padding-block-start: var(--space-8);
+    display: grid;
+    gap: var(--space-4);
+  }
+  .legend-title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-heading);
+    letter-spacing: 0.1em;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+  }
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+  .legend .micon {
+    font-size: 1.3em;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+  }
+  .menu-notes {
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-sm);
+  }
+
+  /* ---------- print: the menu is a printed menu ---------- */
+  @media print {
+    .menu-tabs,
+    .menu-filters,
+    .translate-buttons,
+    .panel-empty {
+      display: none !important;
+    }
+    .menu-panel[hidden],
+    .menu-panels li[hidden],
+    .menu-group[hidden] {
+      display: revert !important;
+    }
+    .js-menu .panel-title {
+      position: static;
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      margin-block: var(--space-8) var(--space-4);
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+    }
+  }
+</style>

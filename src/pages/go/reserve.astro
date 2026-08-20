@@ -1,0 +1,21 @@
+---
+// SILO — static /go/reserve redirect (R14 GitHub-Pages migration, 2026-07-15).
+// Replaces the Netlify go.mts env-indirection with a baked destination. Losing
+// swap-provider-without-deploy is accepted; edit DEST below + rebuild to swap.
+const DEST = 'https://ontopo.com/he/il/page/silo';
+---
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content={`0; url=${DEST}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={DEST} />
+    <title>SILO — מעבר להזמנת מקום</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(DEST)});`}></script>
+  </head>
+  <body style="font-family:system-ui,sans-serif;background:#fffaed;color:#241813;display:grid;place-items:center;min-height:100vh;margin:0;">
+    <p>מעבירים אתכם להזמנת מקום… <a href={DEST}>המשך ידני</a></p>
+  </body>
+</html>

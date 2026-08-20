@@ -1,0 +1,82 @@
+---
+/* R9 i18n — the shared /404 body, parameterized by locale so the three real
+   routes (src/pages/404.astro he, src/pages/en/404.astro, src/pages/ru/404.astro)
+   share one implementation instead of tripling the original page's markup.
+   Owns the same markup/styles the original Hebrew-only 404.astro always did;
+   only the locale plumbing + copy are new. */
+import { notfound } from '../i18n/pages/notfound';
+import { DEFAULT_LOCALE } from '../i18n/locales';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = notfound[locale];
+
+// Per the i18n spec: don't import the src/i18n/locales.ts path helpers here
+// (that file is owned elsewhere) — hardcode the locale-prefixed hrefs
+// directly instead. he stays bare (default, unprefixed locale); en/ru get
+// their own real prefixed routes (/en, /ru — both exist by end of this round).
+const homeHref = locale === 'he' ? '/' : `/${locale}`;
+const menuHref = locale === 'he' ? '/menu' : `/${locale}/menu`;
+---
+
+<section class="nf container">
+  <p class="nf-code notranslate" aria-hidden="true">404</p>
+  <h1 class="nf-title">{t.h1}</h1>
+  <p class="nf-copy">{t.copy}</p>
+  <div class="nf-actions">
+    <a class="btn btn-primary" href={homeHref}>{t.homeLabel}</a>
+    <a class="nf-menu-link" href={menuHref}>{t.menuLabel}</a>
+  </div>
+</section>
+
+<style>
+  .nf {
+    min-block-size: 70svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-4);
+    padding-block: var(--space-24);
+  }
+  .nf-code {
+    font-weight: var(--weight-display);
+    font-size: clamp(4rem, 14vw, 8rem);
+    line-height: 1;
+    /* R7.1-C: mixed on the FIXED cream (--color-on-ground), not the flipped
+       --color-background — the original formula blended cotto into a light
+       base for a quiet warm-tan watermark; blending into the (now dark)
+       --color-background instead would produce a near-invisible dark smudge. */
+    color: color-mix(in srgb, var(--color-warm-surface) 45%, var(--color-on-ground));
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+  .nf-title {
+    font-weight: var(--weight-display);
+    font-size: clamp(var(--text-xl), 5vw, var(--text-2xl));
+    color: var(--color-text);
+    margin: 0;
+  }
+  .nf-copy {
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-lg);
+    max-inline-size: 36ch;
+    margin: 0;
+  }
+  .nf-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    margin-block-start: var(--space-6);
+  }
+  .nf-menu-link {
+    color: var(--color-text);
+    font-weight: var(--weight-heading);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+// SILO — site footer (R3). One quiet centered sign-off — no sitemap:
+// address · hours · four glyphs (Instagram / Facebook / Mail / Waze) · legal.
+// R7.1-C: the ambient wheat-seed layer (R5, mounted here since Footer renders on
+// all 4 pages and Layout is frozen) is retired — it read as dirt on the cream
+// ground. Ambient depth now comes from the espresso wash in ambient.css alone.
+import { MAPS_URL, INSTAGRAM_URL, FACEBOOK_URL, EMAIL_URL, WAZE_URL } from '../lib/links';
+import { DEFAULT_LOCALE, localizedPath, hasTranslation } from '../i18n/locales';
+import { UI } from '../i18n/ui-strings';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = UI[locale].footer;
+// translation-aware: link to the localized route only where it exists, else the
+// bare Hebrew route (never a 404 during incremental rollout).
+const loc = (path: string) => (hasTranslation(path) ? localizedPath(path, locale) : path);
+
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer-inner">
+    <address>
+      <a href={MAPS_URL} target="_blank" rel="noopener">{t.address}</a>
+    </address>
+
+    <p class="footer-hours">{t.hours}</p>
+
+    <ul class="footer-social" role="list">
+      <li>
+        <a href={INSTAGRAM_URL} target="_blank" rel="noopener" aria-label={t.instagramAria}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+            <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"></circle>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href={FACEBOOK_URL} target="_blank" rel="noopener" aria-label={t.facebookAria}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path fill="currentColor" d="M14.5 8.5H16V5.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.4H7.3v3.2h2.5V21h3.3v-5.9h2.5l.4-3.2h-2.9V9.8c0-.9.3-1.3 1.4-1.3Z"></path>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href={EMAIL_URL} aria-label={t.emailAria}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+            <path d="m4.5 7.5 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href={WAZE_URL} target="_blank" rel="noopener" aria-label={t.wazeAria}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path
+              d="M12 3.2c-4.6 0-8.1 3.2-8.1 7.4 0 1.9.8 3.6 2 4.9-.3.6-.8 1.2-1.6 1.6-.4.2-.3.8.1.9 1.5.4 2.8.2 3.8-.2 1.1.5 2.4.8 3.8.8 4.6 0 8.1-3.2 8.1-7.5S16.6 3.2 12 3.2Z"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+            <circle cx="9.4" cy="9.6" r="1" fill="currentColor"></circle>
+            <circle cx="14.6" cy="9.6" r="1" fill="currentColor"></circle>
+            <path d="M9.2 13c.7 1 1.7 1.5 2.8 1.5s2.1-.5 2.8-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          </svg>
+        </a>
+      </li>
+    </ul>
+
+    <div class="footer-legal">
+      <p>
+        {t.legalPrefix(year)}
+        <a href={loc('/accessibility')}>{t.accessibilityLink}</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // whispered stagger-in on first reveal (once) — WAAPI, visible-by-default:
+  // no pre-hidden state, so no-JS and reduced-motion see everything instantly.
+  const footer = document.querySelector<HTMLElement>('footer.footer');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (footer && !reduced && 'IntersectionObserver' in window) {
+    const parts = footer.querySelectorAll<HTMLElement>(
+      'address, .footer-hours, .footer-social li, .footer-legal',
+    );
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        parts.forEach((el, i) => {
+          el.animate(
+            [
+              { opacity: 0, transform: 'translateY(10px)' },
+              { opacity: 1, transform: 'none' },
+            ],
+            { duration: 500, delay: i * 70, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'backwards' },
+          );
+        });
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(footer);
+  }
+</script>
+
+<style>
+  .footer {
+    margin-block-start: var(--space-24);
+    padding-block: var(--space-16) var(--space-8);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+    font-size: var(--text-sm);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on the sunk ground */
+    background: var(--color-ground-sunk); /* R7.1-C: deepest band, per spec */
+  }
+  /* Home ends in a full-bleed cinema band — the tall section-rhythm margin above
+     reads as dead space there (owner 2026-07-13). Tighten it only when the page's
+     <main> holds a cinema band; content pages keep their air. */
+  :global(main:has([data-cinema-band])) + .footer {
+    margin-block-start: var(--space-8);
+  }
+
+  .footer-inner {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  address {
+    font-style: normal;
+  }
+  /* R7.1-C Option A: red reserved for filled buttons only — these are real
+     prose links, so cream text carries an underline as its own affordance
+     (color alone no longer marks them, since cream = the surrounding text too). */
+  address a,
+  .footer-legal a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    color: var(--color-text);
+    font-weight: var(--weight-body);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color var(--dur-fast) var(--ease-smooth);
+  }
+  address a:hover,
+  address a:focus-visible,
+  .footer-legal a:hover,
+  .footer-legal a:focus-visible {
+    color: var(--color-on-ground);
+    text-decoration-thickness: 2px;
+  }
+
+  .footer-hours {
+    max-inline-size: none;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on the sunk ground */
+  }
+
+  .footer-social {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+  }
+  .footer-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 44px;
+    block-size: 44px;
+    color: var(--color-text);
+    transition: color var(--dur-fast) var(--ease-smooth);
+  }
+  .footer-social a:hover,
+  .footer-social a:focus-visible {
+    /* R7.1-C Option A: red reserved for filled buttons — these are ghost icon links */
+    color: var(--color-on-ground);
+  }
+
+  .footer-legal {
+    margin-block-start: var(--space-8);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    font-size: var(--text-xs);
+    inline-size: 100%;
+    /* owner 2026-07-13: the sign-off must read centered, never hugging the edge */
+    text-align: center;
+  }
+  .footer-legal p {
+    margin: 0;
+    text-align: center;
+  }
+  .footer-legal a {
+    min-block-size: 0;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

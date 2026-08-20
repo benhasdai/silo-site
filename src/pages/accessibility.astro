@@ -1,0 +1,15 @@
+---
+// SILO — הצהרת נגישות (owned by task 16-a11y-page; do not edit outside this task).
+// R9 i18n: page body now lives in components/AccessibilityPage.astro, shared
+// with /en/accessibility and /ru/accessibility — see that file for the actual
+// markup/logic.
+import Layout from '../layouts/Layout.astro';
+import AccessibilityPage from '../components/AccessibilityPage.astro';
+import { ACCESSIBILITY } from '../i18n/pages/accessibility';
+
+const t = ACCESSIBILITY.he;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="accessibility" navMode="static" locale="he">
+  <AccessibilityPage locale="he" />
+</Layout>

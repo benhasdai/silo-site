@@ -1,0 +1,80 @@
+---
+/* Task 11 — one menu tab panel.
+   Grouped mode (restaurant): category sections with anchor ids for the chips.
+   Flat mode (business / brunch / desserts): a single centered list — whatever
+   the data provides, nothing hardcoded.
+   No-JS baseline: plain stacked <section> with a visible title.
+   menu.ts adds role="tabpanel" + hidden management. */
+import type { MenuItem } from '../../lib/content';
+import MenuIcon from './MenuIcon.astro';
+import MenuItemRow from './MenuItemRow.astro';
+import { UI } from '../../i18n/ui-strings';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Group {
+  id: string;
+  label: string;
+  note?: string;
+  items: MenuItem[];
+}
+
+interface Props {
+  id: string;
+  title: string;
+  groups?: Group[];
+  items?: MenuItem[];
+  note?: string;
+  locale?: Locale;
+}
+
+const { id, title, groups, items = [], note, locale = DEFAULT_LOCALE } = Astro.props;
+const t = UI[locale].menu;
+---
+
+<section class="menu-panel" id={`panel-${id}`} data-menu-panel={id} aria-labelledby={`panel-${id}-title`}>
+  <h2 class="panel-title" id={`panel-${id}-title`}>{title}</h2>
+
+  {
+    groups ? (
+      <div class="panel-groups">
+        {groups.map((g) => (
+          <section class="menu-group" id={`cat-${g.id}`} data-category={g.id} aria-labelledby={`cat-${g.id}-title`}>
+            <h3 class="group-title" id={`cat-${g.id}-title`}>{g.label}</h3>
+            {g.note && (
+              <p class="group-note">
+                <MenuIcon name="wine" />
+                {g.note}
+              </p>
+            )}
+            <ul class="group-items" role="list">
+              {g.items.map((item) => (
+                <li>
+                  <MenuItemRow item={item} headingTag="h4" locale={locale} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    ) : items.length > 0 ? (
+      <>
+        {note && <p class="panel-note">{note}</p>}
+        <ul class="group-items panel-items" role="list">
+          {items.map((item) => (
+            <li>
+              <MenuItemRow item={item} headingTag="h3" locale={locale} />
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : (
+      <p class="panel-none">{t.comingSoon}</p>
+    )
+  }
+
+  <div class="panel-empty" data-menu-empty hidden>
+    <p>{t.noMatches}</p>
+    <button type="button" class="btn btn-outline" data-menu-reset>{t.resetFilters}</button>
+  </div>
+</section>

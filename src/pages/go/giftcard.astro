@@ -1,0 +1,23 @@
+---
+// SILO — static /go/giftcard redirect (R14 GitHub-Pages migration, 2026-07-15).
+// NOT wired in the UI (GO_GIFTCARD is unused; the /giftcard page embeds the
+// Valuecard flow directly). Kept for completeness. Destination = the prefilled
+// WhatsApp fallback that the old go.mts used as its guaranteed-working default;
+// swap to a Valuecard purchase URL here + rebuild if one is confirmed.
+const DEST = 'https://wa.me/97235733315?text=%D7%94%D7%99%D7%99%20%D7%A1%D7%99%D7%9C%D7%95%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A8%D7%9B%D7%95%D7%A9%20%D7%92%D7%99%D7%A4%D7%98%20%D7%A7%D7%90%D7%A8%D7%93';
+---
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content={`0; url=${DEST}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={DEST} />
+    <title>SILO — מעבר לרכישת גיפט קארד</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(DEST)});`}></script>
+  </head>
+  <body style="font-family:system-ui,sans-serif;background:#fffaed;color:#241813;display:grid;place-items:center;min-height:100vh;margin:0;">
+    <p>מעבירים אתכם לרכישת גיפט קארד… <a href={DEST}>המשך ידני</a></p>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+---
+// SILO — static /go/club redirect (R14 GitHub-Pages migration, 2026-07-15).
+// Baked destination (was Netlify go.mts DEST_CLUB). Edit + rebuild to swap.
+const DEST = 'https://valuecard.co.il/Forms/21BA18CA-D7F0-463D-84F4-565939F62B87';
+---
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content={`0; url=${DEST}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={DEST} />
+    <title>SILO — מעבר להצטרפות למועדון</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(DEST)});`}></script>
+  </head>
+  <body style="font-family:system-ui,sans-serif;background:#fffaed;color:#241813;display:grid;place-items:center;min-height:100vh;margin:0;">
+    <p>מעבירים אתכם להצטרפות למועדון… <a href={DEST}>המשך ידני</a></p>
+  </body>
+</html>

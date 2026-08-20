@@ -1,0 +1,91 @@
+---
+// Ticker (R6) — the owner's three hard-sale facts on a slow, quiet loop.
+// Copy is LOCKED (owner, 2026-07-11) — verbatim, do not reword:
+// private room/events · weekday business lunch · weekend brunch buffet.
+// Style directive: no bold, smaller than the R4 display strip, must not take
+// attention — an information line, not a gesture. But it must READ (the R4
+// 14%-opacity dish names were near-illegible): sage = 5.05:1 AA on cream.
+// Two identical segments + translateX(50%) of the track's own width = a
+// mathematically seamless loop, no JS measurement. Whole strip = one link.
+// prefers-reduced-motion → a static row.
+const lines = [
+  'חדר פרטי ואירועים עד 200 אורחים',
+  'עסקית צהריים בימי חול עד השעה 17:00',
+  'בראנץ׳ בוקר בופה בכל שישי ושבת עד השעה 12:00',
+];
+---
+<a class="ticker" href="/menu" aria-label={`${lines.join(' · ')} — אל התפריט המלא`}>
+  <div class="ticker-track" aria-hidden="true">
+    <div class="ticker-seg">
+      {lines.map((line) => (
+        <span class="ticker-item">{line}<span class="ticker-sep">·</span></span>
+      ))}
+    </div>
+    <div class="ticker-seg">
+      {lines.map((line) => (
+        <span class="ticker-item">{line}<span class="ticker-sep">·</span></span>
+      ))}
+    </div>
+  </div>
+</a>
+
+<style>
+  .ticker {
+    display: block;
+    overflow: hidden;
+    padding-block: var(--space-8);
+    text-decoration: none;
+    background: var(--color-ground-sunk); /* R7.1-C: deepest band, per spec */
+  }
+
+  .ticker-track {
+    display: flex;
+    inline-size: max-content;
+    will-change: transform;
+    animation: ticker-loop 56s linear infinite;
+  }
+  /* Hebrew tickers travel rightward — the head of the line (rightmost) leads */
+  @keyframes ticker-loop {
+    from { transform: translateX(0); }
+    to   { transform: translateX(50%); }
+  }
+  .ticker:hover .ticker-track,
+  .ticker:focus-visible .ticker-track {
+    animation-play-state: paused;
+  }
+
+  .ticker-seg {
+    display: flex;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* quiet hard-sale line: Blender Light, body scale. R7.1-C: sage fails on the
+     sunk ground (3.4:1) — resting state is --color-on-ground-soft (6.8:1, keeps
+     the original "present, legible, never competing" intent), hover/focus steps
+     up to full cream --color-on-ground. */
+  .ticker-item {
+    display: inline-flex;
+    align-items: baseline;
+    font-weight: var(--weight-body);
+    font-size: clamp(var(--text-base), 2.2vw, var(--text-lg));
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    color: var(--color-on-ground-soft);
+    transition: color var(--dur-base) var(--ease-smooth);
+  }
+  .ticker:hover .ticker-item,
+  .ticker:focus-visible .ticker-item {
+    color: var(--color-on-ground);
+  }
+  .ticker-sep {
+    padding-inline: var(--space-6);
+    color: color-mix(in srgb, var(--color-warm-surface) 55%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      animation: none;
+    }
+  }
+</style>

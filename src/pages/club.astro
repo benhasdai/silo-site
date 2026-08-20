@@ -1,0 +1,19 @@
+---
+// SILO — מועדון החברים.
+// R14 GitHub-Pages migration (owner 2026-07-15): reverted to the R12 iframe
+// model — ClubPage.astro is our hero + editorial perks shell wrapping
+// Valuecard's own hosted membership form in a dressed iframe (no backend).
+// The club-join.mts Netlify proxy is gone; Valuecard owns the field contract.
+//
+// R9 i18n: page body lives in components/ClubPage.astro, shared with
+// /en/club and /ru/club — see that file for the actual markup/logic.
+import Layout from '../layouts/Layout.astro';
+import ClubPage from '../components/ClubPage.astro';
+import { club } from '../i18n/pages/club';
+
+const t = club.he;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="club" navMode="static" locale="he">
+  <ClubPage locale="he" />
+</Layout>

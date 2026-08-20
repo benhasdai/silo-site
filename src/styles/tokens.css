@@ -1,0 +1,95 @@
+/* GENERATED COPY — do not edit. The single source of truth is the vault's
+   marketing/tokens.css; this file is overwritten from it on every build
+   (scripts/sync-tokens.mjs) and committed so detached builds work. */
+:root {
+  /* surfaces — R7.1-C "full cinematic espresso" (owner ruling 2026-07-11, supersedes the
+     cream-base canonical ruling). ⚠️ SEMANTIC NOTE: --color-background now means the DARK
+     GROUND and --color-text now means CREAM INK — names kept as-is (not renamed) to avoid
+     touching ~40 component references; every inverted-context spot (surfaces that used to
+     read --color-text as a dark fill, or --color-background as a light fill) was fixed
+     explicitly at its call site. Navy #1a303a is retired as a surface except where kept. */
+  --color-background: #241813;      /* espresso — the site's ground (was cream) */
+  --color-text: #E0CDAA;            /* PARCHMENT — the site's ink (R8, owner pick 2026-07-12). 11.1:1 on ground.
+                                       Replaced near-white cream #fffaed, which read as "a lot of white" and
+                                       killed the espresso warmth. Cream retreats to --color-on-warm (text on
+                                       cotto/sage fills, where parchment fails AA). "Kraft-menu" body ink. */
+  --color-text-secondary: #5a725a;  /* sage — LIGHT-SURFACE CONTEXT ONLY (fails on espresso, 3.4:1). Use --color-on-ground-soft on the dark ground. */
+
+  /* R7.1-C dark cinematic ground — companion surfaces + on-ground text */
+  --color-ground:        #241813;   /* = --color-background. page ground (espresso) */
+  --color-ground-raised: #33241b;   /* cards / teasers / inactive chips — subtle lift */
+  --color-ground-sunk:   #180f0a;   /* deepest bands: ticker, footer, video poster fallback, scrim base */
+  --color-on-ground:      #E0CDAA;  /* = --color-text. PARCHMENT ink → 11.1:1 on ground (R8 owner pick). */
+  --color-on-ground-soft: #b3a086;  /* warm stone — secondary text/eyebrows/meta → 6.8:1 on ground */
+  --color-on-warm:        #fffaed;  /* CREAM — text ONLY on cotto/sage FILLS (badge, active chips, ::selection),
+                                       where parchment fails AA. Cream on cotto = 4.96:1, cream on sage = 5.11:1.
+                                       The iron pairing that used to be --color-on-ground before the R8 ink swap. */
+  --color-ink-display:    #EDE0C6;  /* linen — 13.2:1 on ground. HERO-OVER-VIDEO ONLY (R8.1): brighter warm tier
+                                       for text overlaid on cinema footage, holding AA over bright future clips.
+                                       Static-page mastheads keep --color-on-ground (parchment) — do not reuse here. */
+
+  /* interaction / conversion — R7.1-C Option A (owner ruling): red is reserved
+     for FILLED action buttons only, never bare text on the dark ground (brand
+     red is 3.20:1 there — fill/UI-safe at ≥3:1, but fails the 4.5:1 text bar).
+     Text links use --color-on-ground (cream) + underline instead; state/current
+     markers use --color-warm-surface (cotto, 3.34:1 ≥3:1 UI). */
+  --color-primary: #CD242F;         /* logo red — primary CTA fill. White text on it (5.4:1); fill vs espresso ground 3.8:1 (≥3:1 UI) */
+  --color-primary-hover: #b43939;   /* brick — hover/active of the primary CTA (white 5.9:1) */
+
+  /* warm accent — SURFACE ONLY */
+  --color-warm-surface: #A35A31;    /* cotto terracotta — badge/active-chip/highlight background.
+                                       CREAM text on it (4.96:1). Sampled from the owner's kitchen footage;
+                                       replaced amber #d48c46 (owner ruling 2026-07-11 — amber read as safety-orange,
+                                       clashed with the brand's moka warmth). Never navy text on it (2.66:1 ✗).
+                                       As a surface/bar vs cream = 4.96:1; also holds vs the espresso ground. */
+
+  --color-on-primary: #ffffff;
+
+  /* typography — Blender family only, three weights */
+  --font-family: 'Blender', system-ui, -apple-system, sans-serif;
+  --weight-body: 300;      /* Blender Light — body, long paragraphs */
+  --weight-heading: 700;   /* Blender Bold — section headings, buttons, labels */
+  --weight-display: 900;   /* Blender Black — hero/display moments only */
+
+  --text-xs:   0.75rem;   /* 12px — footnotes, allergen labels */
+  --text-sm:   0.875rem;  /* 14px — meta, labels */
+  --text-base: 1rem;      /* 16px — body (mobile minimum) */
+  --text-lg:   1.25rem;   /* 20px — emphasized body, subheads */
+  --text-xl:   1.75rem;   /* 28px — section headings */
+  --text-2xl:  2.5rem;    /* 40px — page headings */
+  --text-3xl:  4rem;      /* 64px — hero */
+
+  /* spacing — 4px scale; prefer the generous end (abundance that breathes) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;   /* desktop section rhythm */
+  --space-32: 8rem;
+
+  /* layout */
+  --content-max: 1280px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* motion — whispered, not showy */
+  --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1); /* the house curve — fast start, soft landing. The only easing. */
+  --dur-fast: 150ms;  /* @kind other */
+  --dur-base: 300ms;  /* @kind other */
+  --dur-slow: 600ms;  /* @kind other */
+
+  /* nav — R7.5 "coherence round": persistent top bar replaces hero choreography */
+  --nav-bar-height: 60px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --nav-bar-height: 72px;
+  }
+}
+/* breakpoints (for reference in media queries — CSS vars don't work there):
+   sm 640px · md 768px · lg 1024px · xl 1280px. Mobile-first always. */

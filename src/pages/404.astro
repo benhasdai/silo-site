@@ -1,0 +1,15 @@
+---
+// 404 — quiet, on-brand, Hebrew. Astro emits 404.html; Netlify serves it
+// automatically for any unknown path (replaces Netlify's stock English page).
+// R9 i18n: page body now lives in components/NotFoundPage.astro, shared
+// with /en/404 and /ru/404 — see that file for the actual markup/styles.
+import Layout from '../layouts/Layout.astro';
+import NotFoundPage from '../components/NotFoundPage.astro';
+import { notfound } from '../i18n/pages/notfound';
+
+const t = notfound.he;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="home" navMode="static" locale="he">
+  <NotFoundPage locale="he" />
+</Layout>

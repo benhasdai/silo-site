@@ -1,0 +1,13 @@
+---
+// R9 i18n — Russian /ru/accessibility route (real page, never translate.goog).
+// Same body as the Hebrew page — see components/AccessibilityPage.astro.
+import Layout from '../../layouts/Layout.astro';
+import AccessibilityPage from '../../components/AccessibilityPage.astro';
+import { ACCESSIBILITY } from '../../i18n/pages/accessibility';
+
+const t = ACCESSIBILITY.ru;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="accessibility" navMode="static" locale="ru">
+  <AccessibilityPage locale="ru" />
+</Layout>

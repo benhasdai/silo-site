@@ -1,0 +1,101 @@
+---
+// SILO — Home (task 10). Sections registered for scroll-spy: #hero, #cinema-1.
+// R7.5.1: About retired — owner ruling ("KILL", the empty-ground void). The
+// one identity line lives as a transient title inside Hero now.
+// R8.1 "structure lock": two cinema bands mounted after Hero.
+// R8.2 (owner): the bottom club/gift Teasers section is retired — those links
+// live only in the top nav now. Structure is Hero → CinemaBand(2) →
+// CinemaBand(3) → Footer. Both bands render placeholders (homeVideos pool)
+// until real footage lands. The hero down-arrow targets the first band (#cinema-1).
+// R8.5 (owner): the Ident logo-opening was KILLED — "just doesn't work, kill it
+// completely." Removed entirely (component + script + wiring). The three-video
+// structure (hero + 2 bands) stays as-is — the scroll is built around it.
+// R9 i18n: page body now locale-parameterized (Hero/CinemaBand take `locale`);
+// Hebrew route stays the default (unprefixed), title/description pulled from
+// i18n/pages/index.ts. See src/pages/en/index.astro + src/pages/ru/index.astro.
+// R15 (owner, 2026-07-23): <main> is Hero → CinemaBand(dough) →
+// CinemaBand(cocktail) → ClosingCta. The "kitchen" EditorialBeat and both
+// cinema captions were removed (owner rev — decorative text off the videos);
+// their i18n keys stay in i18n/pages/index.ts unused, matching the R7.5.1
+// About-retirement precedent. A 4th cinema band (people-forward clip) was
+// tried and reverted the same day (owner rejected it live). See
+// src/components/home/ClosingCta.astro.
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/home/Hero.astro';
+import CinemaBand from '../components/home/CinemaBand.astro';
+import ClosingCta from '../components/home/ClosingCta.astro';
+import { ONTOPO_URL, ontopoUrl, INSTAGRAM_URL, FACEBOOK_URL } from '../lib/links';
+import { homeVideos } from '../lib/home-videos';
+import { index } from '../i18n/pages/index';
+import { hasTranslation, localizedPath } from '../i18n/locales';
+
+const locale = 'he';
+const t = index.he;
+const loc = (path: string) => (hasTranslation(path) ? localizedPath(path, locale) : path);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Restaurant',
+  '@id': 'https://silo.co.il/#restaurant',
+  name: 'סילו',
+  servesCuisine: ['איטלקי', 'ים תיכוני'],
+  telephone: '+972-3-573-3315',
+  url: 'https://silo.co.il/',
+  image: 'https://silo.co.il/og-default.jpg',
+  hasMenu: 'https://silo.co.il/menu/',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'שד׳ ירושלים 210, מתחם לה פארק',
+    addressLocality: 'חולון',
+    addressCountry: 'IL',
+  },
+  sameAs: [INSTAGRAM_URL, FACEBOOK_URL],
+  acceptsReservations: ONTOPO_URL,
+  // mirrors the footer hours line (content-snapshot "hours"):
+  // א׳-ה׳ 12:00–23:00 · ו׳ 08:00–23:00 · ש׳ 09:00–23:00
+  openingHoursSpecification: [
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+      opens: '12:00',
+      closes: '23:00',
+    },
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Friday', opens: '08:00', closes: '23:00' },
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Saturday', opens: '09:00', closes: '23:00' },
+  ],
+};
+---
+<Layout
+  title={t.pageTitle}
+  description={t.pageDescription}
+  current="home"
+  navMode="spy"
+  locale="he"
+>
+  <Hero locale="he" />
+
+  <CinemaBand
+    id="cinema-1"
+    clip={homeVideos.band2[0]}
+    label={t.cinemaBand2Label}
+  />
+
+  <CinemaBand
+    clip={homeVideos.band3[0]}
+    label={t.cinemaBand3Label}
+  />
+
+  <ClosingCta
+    heading={t.closing.heading}
+    reserveHref={ontopoUrl(locale)}
+    reserveLabel={t.closing.reserveCta}
+    eventHref={loc('/events')}
+    eventLabel={t.closing.eventCta}
+  />
+
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+</Layout>
+
+<script>
+  import '../scripts/home';
+</script>

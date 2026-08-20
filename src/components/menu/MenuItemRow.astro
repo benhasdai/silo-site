@@ -1,0 +1,68 @@
+---
+/* Task 11 — a single dish row, printed-menu treatment:
+   name Bold 700 → amber dot → price Light 300 hugging the name (inline-start),
+   desc Light 300 sage, allergens as quiet inline icons with Hebrew aria-labels.
+   Contract hooks for task 13's live-price patcher:
+   data-item-id on the root, data-price on the price node, prices in .notranslate. */
+import type { MenuItem } from '../../lib/content';
+import MenuIcon from './MenuIcon.astro';
+import { translateMenuItem } from '../../i18n/menu-content';
+import { UI } from '../../i18n/ui-strings';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Props {
+  item: MenuItem;
+  /** heading level of the dish name — h4 under category groups, h3 in flat tabs */
+  headingTag?: 'h3' | 'h4';
+  locale?: Locale;
+}
+
+const { item: rawItem, headingTag = 'h4', locale = DEFAULT_LOCALE } = Astro.props;
+const item = translateMenuItem(rawItem, locale);
+const Name = headingTag;
+const hasUnit2 = Boolean(item.display_unit2_label) && item.unit2_price != null;
+const t = UI[locale].menu;
+const l = UI[locale].menu.legend;
+---
+
+<article
+  class="menu-item"
+  data-item-id={item.id}
+  data-vegan={item.vegan ? '1' : '0'}
+  data-gf={item.gluten_free ? '1' : '0'}
+>
+  <div class="item-head">
+    <Name class="item-name">{item.display_name}</Name>
+    {
+      (item.vegan || item.gluten_free) && (
+        <span class="item-diet">
+          {item.vegan && <MenuIcon name="vegan" label={l.vegan} />}
+          {item.gluten_free && <MenuIcon name="gluten_free" label={l.gluten_free} />}
+        </span>
+      )
+    }
+    {
+      /* price 0 = included in a fixed-price format (brunch/business choices) — no leader/number */
+      item.price > 0 && (
+        <>
+          <span class="item-leader" aria-hidden="true" />
+          <p class="item-price">
+            <span class="notranslate"><span class="price-num" data-price>{item.price}</span></span>
+            <span class="visually-hidden">{t.currencyWord}</span>
+            {hasUnit2 && (
+              <span class="item-unit2">
+                <span>{item.display_unit2_label}</span>
+                <span class="notranslate">
+                  <span class="price-num" data-price-unit2>{item.unit2_price}</span>
+                </span>
+                <span class="visually-hidden">{t.currencyWord}</span>
+              </span>
+            )}
+          </p>
+        </>
+      )
+    }
+  </div>
+  {item.display_desc && <p class="item-desc">{item.display_desc}</p>}
+</article>

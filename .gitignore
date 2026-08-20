@@ -1,0 +1,22 @@
+node_modules
+node_modules.nosync
+dist
+.netlify
+.astro
+.DS_Store
+.playwright-mcp/
+
+# internal docs are local-only — never in the public repo (owner ruling 2026-07-16)
+*.md
+
+# Claude-side working material — local-only, never in the public repo (2026-07-21)
+Claude/
+.claude/
+skills/
+.mcp.json
+__pycache__/
+
+# design-sync — local marketing tooling and its build output, never in the
+# public repo (source cards + build.mjs; regenerate ds-bundle/ from them)
+.design-sync/
+ds-bundle/

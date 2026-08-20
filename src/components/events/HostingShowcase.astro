@@ -1,0 +1,291 @@
+---
+// R3 — the events page body: three hosting types, each a real photograph and an
+// UNFOLDING full package menu (native <details> = no-JS + keyboard for free;
+// events.ts adds smooth height, deep links and Lenis scroll). All package info
+// lives INSIDE its section (user ruling); WhatsApp CTA per package replaces the
+// old inquiry form as the conversion path.
+// R9 i18n — parameterized by locale: package copy from getEventPackages(locale),
+// chrome strings (aria-label, "view full menu", "per guest", WhatsApp CTA text)
+// from the events strings module.
+import { WHATSAPP_URL } from '../../lib/links';
+import { getEventPackages, menuItemIndex, resolveDish } from './events-menu-data';
+import { events } from '../../i18n/pages/events';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = events[locale];
+const byId = menuItemIndex();
+const packages = getEventPackages(locale);
+---
+<section class="showcase" aria-label={t.showcaseAriaLabel}>
+  <div class="container">
+    <div class="show-list">
+      {packages.map((pkg, i) => (
+        <details class="show-row" id={pkg.id} data-event-fold>
+          <summary class="show-summary">
+            <span class={`show-media${i % 2 === 1 ? ' show-media-flip' : ''}`}>
+              <img src={pkg.photo} alt={pkg.alt} loading="lazy" decoding="async" width="1200" height="900" />
+            </span>
+            <span class="show-body">
+              <span class="badge-warm">{pkg.tag}</span>
+              <span class="show-title" role="heading" aria-level="2">{pkg.title}</span>
+              <span class="show-desc">{pkg.body}</span>
+              <span class="show-price"><span class="notranslate">{pkg.pricePp} ₪</span> {t.perGuest}</span>
+              <span class="show-open btn btn-outline" aria-hidden="true">
+                {t.viewFullMenu}
+                <svg class="show-chev" width="14" height="14" viewBox="0 0 20 20" fill="none">
+                  <path d="M4 8l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </span>
+          </summary>
+
+          <div class="fold" data-fold-panel>
+            <div class="fold-inner">
+              <p class="fold-intro">{pkg.intro}</p>
+
+              {pkg.sections.map((sec) => (
+                <section class="fold-sec">
+                  <h3 class="fold-sec-title">
+                    {sec.title}
+                    {sec.note && <span class="fold-sec-note">{sec.note}</span>}
+                  </h3>
+                  {sec.text && <p class="fold-text">{sec.text}</p>}
+                  {sec.dishes && (
+                    <ul class="fold-dishes" role="list">
+                      {sec.dishes.map((d) => {
+                        const r = resolveDish(d, byId, locale);
+                        return (
+                          <li>
+                            <span class="fold-dish-name">{r.name}</span>
+                            {r.desc && <span class="fold-dish-desc">{r.desc}</span>}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
+              ))}
+
+              <section class="fold-sec">
+                <h3 class="fold-sec-title">{t.drinksHeading}</h3>
+                {pkg.drinks.map((line) => <p class="fold-text">{line}</p>)}
+              </section>
+
+              <div class="fold-pricing">
+                <p><strong class="notranslate">{pkg.pricePp} ₪</strong> {t.perGuest}</p>
+                <p><strong class="notranslate">{pkg.priceKids} ₪</strong> {t.kidsUpTo8}</p>
+              </div>
+
+              <ul class="fold-fine" role="list">
+                {pkg.finePrint.map((line) => <li>{line}</li>)}
+              </ul>
+
+              <p class="fold-cta">
+                <a
+                  class="btn btn-primary"
+                  href={WHATSAPP_URL(t.whatsappMessage(pkg.title, pkg.pricePp))}
+                  target="_blank"
+                  rel="noopener"
+                >{t.ctaLabel(pkg.title)}</a>
+              </p>
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .showcase {
+    padding-block: var(--space-8) var(--space-16);
+  }
+  @media (min-width: 768px) {
+    .showcase {
+      padding-block: var(--space-12) var(--space-24);
+    }
+  }
+
+  .show-list {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  .show-row {
+    scroll-margin-block-start: var(--space-8);
+  }
+
+  /* ---- the card (summary) ---- */
+  .show-summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+    border-radius: var(--radius-lg);
+  }
+  .show-summary::-webkit-details-marker {
+    display: none;
+  }
+  .show-summary:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 4px;
+  }
+
+  .show-media {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 4 / 3;
+  }
+  /* GSAP owns the img transform (scroll drift) — hover feedback lives on the
+     title link colour instead, so CSS and scrub never fight. */
+  .show-media img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    will-change: transform;
+  }
+  /* the whole card is the control, so hovering it lights the button */
+  .show-summary:hover .show-open,
+  .show-summary:focus-visible .show-open {
+    background: var(--color-text);
+    color: var(--color-background);
+  }
+
+  .show-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .show-title {
+    display: block;
+    font-weight: var(--weight-display);
+    font-size: var(--text-xl);
+    line-height: 1.15;
+  }
+  .show-desc {
+    display: block;
+    max-inline-size: 46ch;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+  }
+  .show-price {
+    font-weight: var(--weight-heading);
+  }
+  /* the way into the menu — a real button, not a hint. Shape and colour come
+     from .btn/.btn-outline; outline keeps the filled red for the WhatsApp CTA
+     inside the fold, so the two never compete. */
+  .show-open {
+    margin-block-start: var(--space-2);
+  }
+  .show-chev {
+    transition: transform var(--dur-base) var(--ease-smooth);
+  }
+  .show-row[open] .show-chev {
+    transform: rotate(180deg);
+  }
+
+  @media (min-width: 768px) {
+    .show-summary {
+      grid-template-columns: 7fr 5fr;
+      gap: var(--space-12);
+    }
+    /* alternate media side — direction flip keeps markup order and RTL text intact */
+    .show-media-flip {
+      order: 2;
+    }
+  }
+
+  /* ---- the unfolded menu ---- */
+  .fold {
+    overflow: hidden;
+  }
+  .fold-inner {
+    padding-block: var(--space-8) var(--space-4);
+    max-inline-size: 44rem;
+  }
+
+  .fold-intro {
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    max-inline-size: 55ch;
+  }
+
+  .fold-sec {
+    margin-block-start: var(--space-8);
+  }
+  .fold-sec-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-weight: var(--weight-display);
+    font-size: var(--text-lg);
+  }
+  .fold-sec-title::before {
+    content: '';
+    flex: none;
+    inline-size: var(--space-6);
+    block-size: 3px;
+    border-radius: 999px;
+    background: var(--color-warm-surface);
+  }
+  .fold-sec-note {
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-weight: var(--weight-body);
+    font-size: var(--text-sm);
+  }
+
+  .fold-text {
+    margin-block-start: var(--space-3);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    max-inline-size: 60ch;
+  }
+
+  .fold-dishes {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .fold-dish-name {
+    font-weight: var(--weight-heading);
+  }
+  .fold-dish-desc {
+    display: block;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-sm);
+    max-inline-size: 52ch;
+  }
+
+  .fold-pricing {
+    margin-block-start: var(--space-8);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-8);
+    font-size: var(--text-lg);
+  }
+  .fold-pricing strong {
+    font-weight: var(--weight-display);
+  }
+
+  .fold-fine {
+    list-style: none;
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-size: var(--text-sm);
+  }
+
+  .fold-cta {
+    margin-block-start: var(--space-8);
+  }
+</style>

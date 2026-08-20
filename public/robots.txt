@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# /go/* are outbound provider redirects (reservation/giftcard/club/delivery) — no content
+Disallow: /go/
+
+Sitemap: https://silo.co.il/sitemap.xml

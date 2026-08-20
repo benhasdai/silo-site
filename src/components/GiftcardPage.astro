@@ -1,0 +1,154 @@
+---
+// SILO — גיפט קארד. R11 "Direction B — The Table" shell, R12 simplification
+// (owner 2026-07-14): the custom builder + the reverse-engineered
+// giftcard-order.mts payment reconstruction are RETIRED. Instead we embed
+// Valuecard's own live, hosted gift-card page (valuecard.co.il/GiftCards/silo
+// — branded landing → builder → Pelecard payment, all inside their page) in a
+// dressed iframe, kept inside our hero + copy shell. Guaranteed-working, zero
+// contract-guessing; we never see or build card fields. Refine later.
+// Self-scoped warm-cream palette (.giftx) — tokens.css is dark-espresso-mode.
+import { giftcard } from '../i18n/pages/giftcard';
+import { DEFAULT_LOCALE } from '../i18n/locales';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = giftcard[locale];
+
+// Valuecard's own hosted SILO gift-card page — the BRANDED LANDING that
+// initialises the client key (vCkey) before entering the builder → Pelecard
+// payment. Must be /GiftCards/silo, NOT /orders/silo: the order app does not
+// set vCkey itself and errors when loaded standalone (R12 bug, fixed here).
+// NOTE (R14 migration): the 2026-07-15 brief named /orders/silo, contradicting
+// this proven R12 fix — kept /GiftCards/silo pending owner confirmation.
+const VALUECARD_GIFT_URL = 'https://valuecard.co.il/GiftCards/silo';
+---
+
+<article class="giftx" dir={locale === 'he' ? 'rtl' : 'ltr'}>
+  <section class="gx-hero">
+    <img class="gx-hero__img" src="/media/gift-hero.jpg" alt={t.heroAlt} />
+    <div class="gx-hero__scrim" aria-hidden="true"></div>
+    <div class="gx-hero__type">
+      <p class="gx-kicker">{t.kicker}</p>
+      <h1 class="gx-h1">{t.h1}</h1>
+      <p class="gx-hero__lead">{t.lead}</p>
+      <p class="gx-hero__sub">{t.subline}</p>
+    </div>
+    <button class="gx-arrow" type="button" data-gx-arrow aria-label={t.amount.legend}>
+      <span class="gx-arrow__magnet"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 8l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>
+  </section>
+
+  <section class="gx-embed" id="gx-embed">
+    <div class="gx-embed__intro">
+      <p class="gx-kicker gx-kicker--dark">{t.kicker}</p>
+      <h2 class="gx-embed__title">{t.amount.legend}</h2>
+      <p class="gx-embed__trust">
+        {t.pay.trustPre}<strong>{t.pay.trustStrong}</strong>{t.pay.trustPost}
+      </p>
+    </div>
+
+    <div class="gx-win">
+      <div class="gx-win__bar">
+        <span class="gx-win__lock"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 9V6a4 4 0 118 0v3M5 9h10v7H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> {t.pay.pciBadge}</span>
+      </div>
+      <iframe
+        class="gx-win__frame"
+        src={VALUECARD_GIFT_URL}
+        title={t.h1}
+        loading="lazy"
+        allow="payment"
+        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+  </section>
+</article>
+
+<style>
+  .giftx {
+    --cream: #fffaed; --paper: #fffdf6; --ink: #241813; --ink-soft: #6f5a45;
+    --hair: #e7ddc6; --cotto: #a35a31; --red: #cd242f;
+    --sage: #5a725a; --linen: #EDE0C6; --parch: #E0CDAA;
+    display: block; background: var(--cream); color: var(--ink);
+    font-weight: 300; line-height: 1.65; overflow-x: clip;
+  }
+  .giftx *, .giftx *::before, .giftx *::after { box-sizing: border-box; }
+  .giftx [hidden] { display: none !important; }
+
+  /* ---------- hero: photo carries the page ---------- */
+  .gx-hero { position: relative; min-block-size: 100svh; overflow: hidden; background: #3a2a1e; }
+  .gx-hero__img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; filter: saturate(1.05) contrast(1.02); }
+  /* strong vertical lower-third — physical `to top` only (logical gradient
+     keywords are invalid CSS and silently void the whole layer, which is why
+     the old scrim never rendered). */
+  .gx-hero__scrim { position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(16,10,6,.95) 0%, rgba(16,10,6,.76) 20%, rgba(16,10,6,.44) 42%, rgba(16,10,6,.12) 60%, rgba(16,10,6,0) 74%); }
+  .gx-hero__type { position: absolute; inset-block-end: clamp(4.5rem, 10vh, 7rem); inset-inline: clamp(1.4rem, 6vw, 5.5rem);
+    max-inline-size: min(92%, 52rem); color: var(--linen); }
+  .gx-kicker { font-weight: 700; font-size: .82rem; letter-spacing: .36em; color: var(--parch); margin: 0 0 1.1rem; }
+  .gx-kicker--dark { color: var(--cotto); }
+  .gx-h1 { font-weight: 900; font-size: clamp(2.4rem, 7.5vw, 5.4rem); line-height: .99; text-wrap: balance; text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 2px 22px rgba(0,0,0,.5); }
+  .gx-hero__lead { font-weight: 300; font-size: clamp(1rem, 2vw, 1.25rem); color: var(--cream); margin: 1.2rem 0 0; max-inline-size: 32rem; }
+  .gx-hero__sub { font-weight: 700; font-size: .95rem; color: var(--parch); margin: .8rem 0 0; }
+  .gx-arrow { position: absolute; z-index: 3; inset-block-end: 26px; inset-inline: 0; margin-inline: auto; inline-size: 52px; block-size: 52px;
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,250,237,.5);
+    color: var(--cream); background: rgba(20,12,8,.28); cursor: pointer; padding: 0; }
+  .gx-arrow__magnet { display: inline-flex; will-change: transform; }
+  .gx-arrow__magnet svg { animation: gx-bob 2.6s cubic-bezier(.4,0,.2,1) infinite; }
+  @keyframes gx-bob { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+
+  /* ---------- embed: Valuecard's own gift flow, dressed in our shell ---------- */
+  .gx-embed { max-inline-size: 66rem; margin-inline: auto;
+    padding: clamp(2.75rem, 6vw, 5.5rem) clamp(1.4rem, 6vw, 5.5rem) clamp(3rem, 7vw, 6rem); }
+  .gx-embed__intro { max-inline-size: 40rem; margin: 0 0 clamp(1.6rem, 3vw, 2.4rem); }
+  .gx-embed__title { font-weight: 900; font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.04; margin: 0 0 .8rem; }
+  .gx-embed__trust { font-size: .84rem; color: var(--ink-soft); line-height: 1.6; margin: 0; max-inline-size: 34rem; }
+  .gx-embed__trust strong { color: var(--ink); font-weight: 700; }
+
+  .gx-win { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 60px -34px rgba(36,24,19,.5); }
+  .gx-win__bar { display: flex; align-items: center; justify-content: space-between; padding: .8rem 1.2rem;
+    background: var(--ink); color: var(--cream); font-weight: 700; font-size: .82rem; }
+  .gx-win__lock { display: inline-flex; align-items: center; gap: .4rem; }
+  .gx-win__lock svg { flex: none; }
+  .gx-win__frame { display: block; inline-size: 100%; border: 0;
+    block-size: clamp(640px, 84svh, 940px); background: var(--paper); }
+
+  @media (prefers-reduced-motion: reduce) { .gx-arrow__magnet svg { animation: none; } }
+</style>
+
+<script>
+  type LenisLike = { scrollTo: (t: string | HTMLElement, o?: Record<string, unknown>) => void };
+  const lenis = () => (window as Window & { __lenis?: LenisLike }).__lenis;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // magnetic down-arrow → smooth pull to the embedded gift flow
+  const arrow = document.querySelector<HTMLButtonElement>('[data-gx-arrow]');
+  if (arrow) {
+    arrow.addEventListener('click', () => {
+      const target = document.getElementById('gx-embed');
+      const l = lenis();
+      if (l && target) l.scrollTo(target, { duration: 1.4, easing: (t: number) => 1 - Math.pow(1 - t, 4), offset: -12 });
+      else target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    });
+    if (!reduced && window.matchMedia('(pointer: fine)').matches) {
+      const magnet = arrow.querySelector<HTMLElement>('.gx-arrow__magnet') ?? arrow;
+      let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+      const tick = () => {
+        cx += (tx - cx) * 0.16; cy += (ty - cy) * 0.16;
+        magnet.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
+        raf = Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1 ? requestAnimationFrame(tick) : 0;
+      };
+      window.addEventListener('pointermove', (e) => {
+        const r = arrow.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+        const within = Math.hypot(dx, dy) < 130;
+        tx = within ? dx * 0.35 : 0; ty = within ? dy * 0.35 : 0;
+        if (!raf) raf = requestAnimationFrame(tick);
+      }, { passive: true });
+    }
+  }
+</script>

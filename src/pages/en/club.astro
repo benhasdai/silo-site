@@ -1,0 +1,13 @@
+---
+// R9 i18n — English /en/club route (real page, never translate.goog). Same
+// body as the Hebrew page — see components/ClubPage.astro.
+import Layout from '../../layouts/Layout.astro';
+import ClubPage from '../../components/ClubPage.astro';
+import { club } from '../../i18n/pages/club';
+
+const t = club.en;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="club" navMode="static" locale="en">
+  <ClubPage locale="en" />
+</Layout>

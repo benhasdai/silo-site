@@ -1,0 +1,18 @@
+---
+// R9 i18n — English /en/events route (real page, never translate.goog). Same
+// body as the Hebrew page — see components/events/EventsHero.astro +
+// HostingShowcase.astro.
+import Layout from '../../layouts/Layout.astro';
+import EventsHero from '../../components/events/EventsHero.astro';
+import HostingShowcase from '../../components/events/HostingShowcase.astro';
+import { events } from '../../i18n/pages/events';
+
+const t = events.en;
+---
+<Layout title={t.pageTitle} description={t.pageDescription} current="events" navMode="static" locale="en">
+  <EventsHero locale="en" />
+  <HostingShowcase locale="en" />
+  <script>
+    import '../../scripts/events';
+  </script>
+</Layout>

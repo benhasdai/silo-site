@@ -1,0 +1,657 @@
+---
+// SILO — global navigation (task 14; R7.5.2 "the owner's cut").
+// FROZEN API: <Nav mode="spy"|"static" current="home"|"menu"|"events"|"accessibility"|"club"|"giftcard" />
+// Rendered only by Layout.
+//
+// R7.5.2 architecture (owner rulings, 2026-07-12):
+// - Home (mode="spy"): the bar starts HIDDEN — the hero opens as pure cinema —
+//   and glides down once scrolling begins (the floating hero CTA lifts away in
+//   the same beat; the two motions crossing read as a merge). The arming AND
+//   the reveal listener both live in the pre-paint inline script below: zero
+//   module/GSAP dependency, so a hidden bar can never strand (the R5 law).
+// - Static pages: sticky, always visible, unchanged offsets.
+// - Bar surface is translucent espresso + blur — air, not a choking slab.
+// - Desktop composition (RTL): logo at inline-start (right) · links DEAD-CENTER
+//   (grid 1fr auto 1fr) · at inline-end (left): WhatsApp + phone icon pair,
+//   then the red booking CTA at the far edge ("CTA should be left").
+// - Logo: the REAL print wordmark, cream, clear-but-not-giant (36/44px). The
+//   R7.5.1 tower glyph is reverted — BRANDING BAN (CLAUDE.md): no mark surgery
+//   without explicit owner approval. Its life comes from the bar's motion.
+// - Mobile <1024: slim logo+burger bar; drawer unchanged (focus trap, Esc,
+//   scroll-lock, booking pill first).
+import logoRed from '../assets/logo-red.svg?raw';
+import { ontopoUrl, WHATSAPP_URL, TEL_URL, TEL_DISPLAY, GO_DELIVERY } from '../lib/links';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { UI } from '../i18n/ui-strings';
+import { DEFAULT_LOCALE, localizedPath, hasTranslation } from '../i18n/locales';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  mode?: 'spy' | 'static';
+  current?: 'home' | 'menu' | 'events' | 'accessibility' | 'club' | 'giftcard';
+  locale?: Locale;
+}
+const { mode = 'static', current = 'home', locale = DEFAULT_LOCALE } = Astro.props;
+const t = UI[locale];
+// Every internal href gets rewritten to the current locale's route — BUT only
+// where a translated build of that page actually exists (same gate the language
+// switcher uses). Untranslated pages fall back to the bare Hebrew route so a
+// non-Hebrew page never links into a 404 during the incremental rollout.
+const loc = (path: string) => (hasTranslation(path) ? localizedPath(path, locale) : path);
+
+const items = [
+  { href: loc('/'), label: t.nav.home, key: 'home' },
+  { href: loc('/menu'), label: t.nav.menu, key: 'menu' },
+  { href: loc('/events'), label: t.nav.events, key: 'events' },
+  // R8: club/giftcard become internal pages (own mailing/voucher systems land
+  // later — §Flags 2/3) — no longer external, so `external`/`target` drop.
+  { href: loc('/club'), label: t.nav.club, key: 'club' },
+  { href: loc('/giftcard'), label: t.nav.giftcard, key: 'giftcard' },
+  { href: GO_DELIVERY, label: t.nav.delivery, key: 'delivery', external: true },
+  { href: loc('/accessibility'), label: t.nav.accessibility, key: 'accessibility' },
+];
+// The bar shows 5 links (home = logo click, accessibility = footer + drawer only).
+const desktopItems = items.filter((item) => item.key !== 'home' && item.key !== 'accessibility');
+
+const isHome = current === 'home';
+---
+<div class="nav-root" data-nav-root data-mode={mode} data-current={current}>
+  <div class="nav-inner">
+    {
+      isHome ? (
+        <button class="site-logo" type="button" aria-label={t.nav.logoHomeAria} data-logo>
+          <span class="logo-art" set:html={logoRed} />
+        </button>
+      ) : (
+        <a class="site-logo" href={loc('/')} aria-label={t.nav.logoOtherAria} data-logo>
+          <span class="logo-art" set:html={logoRed} />
+        </a>
+      )
+    }
+
+    <ul class="nav-links" role="list">
+      {
+        desktopItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              data-key={item.key}
+              aria-current={item.key === current ? 'page' : undefined}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- actions cluster, inline-end (left in RTL). DOM order wa → tel → CTA
+         renders RTL as: wa rightmost, red CTA at the FAR LEFT edge. -->
+    <div class="nav-actions">
+      <a class="nav-icon" href={WHATSAPP_URL()} target="_blank" rel="noopener" aria-label={t.nav.whatsappAria}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+        </svg>
+      </a>
+      <a class="nav-icon" href={TEL_URL} aria-label={t.nav.telAria(TEL_DISPLAY)}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2Z" />
+        </svg>
+      </a>
+      <!-- R14-T8b: accessibility statement — one-click on desktop (was footer +
+           drawer only). Mobile keeps it in the drawer (.nav-actions is
+           display:none <1024), so this adds no mobile duplicate. -->
+      <a
+        class="nav-icon"
+        href={loc('/accessibility')}
+        aria-label={t.nav.accessibility}
+        aria-current={current === 'accessibility' ? 'page' : undefined}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M20.5 6c-2.61.7-5.67 1-8.5 1s-5.89-.3-8.5-1L3 8c1.86.5 4 .83 6 1v13h2v-6h2v6h2V9c2-.17 4.14-.5 6-1l-.5-2zM12 6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" />
+        </svg>
+      </a>
+      <a class="nav-cta btn btn-primary" href={ontopoUrl(locale)} target="_blank" rel="noopener">
+        {t.reserveCta}
+      </a>
+      <LanguageSwitcher locale={locale} />
+    </div>
+
+    <!-- mobile-only whatsapp, sits beside the burger whenever it's shown
+         (owner, 2026-07-23) — the desktop icon pair lives in .nav-actions,
+         which is display:none on mobile, so this is a separate mobile-visible
+         icon rather than trying to reveal a slice of that cluster. -->
+    <a class="nav-icon nav-icon--mobile" href={WHATSAPP_URL()} target="_blank" rel="noopener" aria-label={t.nav.whatsappAria}>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+      </svg>
+    </a>
+
+    <button
+      class="nav-burger"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      data-burger
+    >
+      <span class="burger-lines" aria-hidden="true"><span></span><span></span></span>
+      <span
+        class="visually-hidden"
+        data-burger-label
+        data-label-open={t.nav.burgerLabel}
+        data-label-close={t.nav.burgerLabelClose}
+      >{t.nav.burgerLabel}</span>
+    </button>
+  </div>
+
+  <nav class="site-nav" id="site-nav" aria-label={t.nav.navAriaLabel} data-nav>
+    <div class="nav-panel">
+      <LanguageSwitcher locale={locale} />
+      <a
+        class="drawer-book btn btn-primary"
+        href={ontopoUrl(locale)}
+        target="_blank"
+        rel="noopener"
+        style="--i: 0"
+      >{t.reserveCta}</a>
+      <ul class="roadmap" role="list">
+        {
+          items.map((item, i) => (
+            <li class="station" style={`--i: ${i + 1}`}>
+              <a
+                href={item.href}
+                data-key={item.key}
+                aria-current={item.key === current ? 'page' : undefined}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener' : undefined}
+              >
+                <span class="label">{item.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <!-- owner, 2026-07-23: "the phone doesn't need a button of this kind —
+           just a phone icon + a whatsapp icon beside it, both red, both
+           clear and large." Replaces the bordered pill + number text. -->
+      <div class="contact-icons" style={`--i: ${items.length + 1}`}>
+        <a class="contact-icon" href={TEL_URL} aria-label={t.nav.telAria(TEL_DISPLAY)}>
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
+            <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2Z" />
+          </svg>
+        </a>
+        <a class="contact-icon" href={WHATSAPP_URL()} target="_blank" rel="noopener" aria-label={t.nav.whatsappAria}>
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<script is:inline>
+  // Pre-paint, self-contained (NO module/GSAP dependency — the R5 fail-safe law):
+  // 1. mark JS availability (drawer replaces the no-JS flow bar);
+  // 2. on Home (spy) with motion allowed, arm the cinematic entrance — bar
+  //    hidden until scroll — AND wire the vanilla reveal listener right here,
+  //    so the state that hides the bar and the code that reveals it can never
+  //    be split by a failed bundle. Default CSS = bar visible (no-JS /
+  //    reduced-motion / static pages never see a hidden bar).
+  (function () {
+    var s = document.currentScript;
+    var root = s && s.previousElementSibling;
+    if (!root || !root.hasAttribute || !root.hasAttribute('data-nav-root')) {
+      root = document.querySelector('[data-nav-root]');
+    }
+    if (!root) return;
+    root.classList.add('js');
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || root.getAttribute('data-mode') !== 'spy') return;
+
+    var de = document.documentElement;
+    de.setAttribute('data-hero-choreo', '');
+    var sync = function () {
+      de.classList.toggle('is-revealed', (window.scrollY || 0) > window.innerHeight * 0.12);
+    };
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+    sync(); // hash / back-navigation lands mid-scroll → correct state pre-paint
+  })();
+</script>
+
+<script>
+  import { initNav } from '../scripts/nav';
+  initNav();
+</script>
+
+<style>
+  /* ============ bar shell ============
+     Default: sticky, in-flow, ALWAYS VISIBLE (static pages, no-JS, reduced
+     motion). Translucent espresso + blur = air; the hairline stays. */
+  .nav-root {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 90;
+    background: color-mix(in srgb, var(--color-ground-sunk) 86%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-on-ground) 12%, transparent);
+  }
+  /* Home cinematic entrance (armed pre-paint, spy + JS + motion only):
+     fixed and parked above the viewport; .is-revealed glides it down on the
+     iOS drawer curve — "floats gently down". Interruptible both ways. */
+  :global(html[data-hero-choreo]) .nav-root {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-start: 0;
+    transform: translateY(-100%);
+    transition: transform 450ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  :global(html[data-hero-choreo].is-revealed) .nav-root {
+    transform: translateY(0);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    block-size: var(--nav-bar-height);
+    max-inline-size: var(--content-max);
+    margin-inline: auto;
+    padding-inline: var(--space-6);
+  }
+  /* Desktop composition: logo | centered links | actions — true centering via
+     grid (works with or without JS; the burger is display:none here so the
+     grid sees exactly three children). */
+  @media (min-width: 1024px) {
+    .nav-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+    }
+  }
+
+  /* ============ logo — the real wordmark, cream, clear not giant ============ */
+  .site-logo {
+    display: block;
+    flex-shrink: 0;
+    justify-self: start; /* grid: inline-start = right in RTL */
+    block-size: 36px;
+    aspect-ratio: 273.33 / 135.37;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: var(--color-on-ground);
+  }
+  .logo-art {
+    display: block;
+    block-size: 100%;
+    transition: translate var(--dur-base) var(--ease-smooth);
+  }
+  .logo-art :global(svg) {
+    display: block;
+    block-size: 100%;
+    inline-size: 100%;
+    color: var(--color-on-ground); /* cream in the bar — red stays reserved for the CTA fill */
+  }
+  .site-logo:hover .logo-art,
+  .site-logo:focus-visible .logo-art {
+    translate: 0 -2px;
+  }
+  @media (min-width: 1024px) {
+    .site-logo {
+      block-size: 44px;
+    }
+  }
+
+  /* ============ links — dead-center, bigger (owner: "font size needs to be bigger") ============ */
+  .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    justify-self: center;
+    align-items: center;
+    gap: var(--space-2) var(--space-8);
+    min-inline-size: 0;
+  }
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    min-block-size: 44px;
+    color: var(--color-on-ground);
+    font-weight: var(--weight-heading);
+    font-size: var(--text-base);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease-smooth);
+  }
+  .nav-links a:hover,
+  .nav-links a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  /* current page — cotto underline (state marker; red stays reserved for the CTA fill) */
+  .nav-links a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--color-warm-surface);
+    text-underline-offset: 4px;
+  }
+
+  /* ============ actions — icon pair + the red CTA at the far inline-end ============ */
+  .nav-actions {
+    justify-self: end; /* grid: inline-end = left in RTL */
+    align-items: center;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+  .nav-icon {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    color: var(--color-on-ground);
+    transition: translate var(--dur-fast) var(--ease-smooth);
+  }
+  .nav-icon:hover,
+  .nav-icon:focus-visible {
+    translate: 0 -1px;
+  }
+  .nav-cta {
+    flex-shrink: 0;
+    /* R8 (owner): the pill was out of proportion with the bar — trim it (same
+       text size) and push the icon pair a bit further off it ("not too much"). */
+    margin-inline-start: var(--space-4);
+    min-block-size: 40px;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-6);
+  }
+  .nav-cta:active {
+    transform: scale(0.97);
+  }
+  /* language pills sit after the red CTA — give the cluster clear air off the
+     button so it doesn't crowd (owner 2026-07-13). Scoped to the desktop actions
+     row only; the drawer's centered switcher is untouched. */
+  .nav-actions :global(.lang-switcher) {
+    margin-inline-start: var(--space-4);
+  }
+
+  /* ============ hamburger — mobile only (JS), pushed to inline-end ============ */
+  /* mobile-only whatsapp icon, beside the burger (owner, 2026-07-23) — comes
+     first in DOM order, so it (not the burger) carries the push to the
+     inline-end edge; the burger just follows it in normal flow. Sizing/color
+     come from the shared .nav-icon rule above; this only owns visibility +
+     the edge push. */
+  .nav-icon--mobile {
+    display: none;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+  }
+  .nav-root.js .nav-icon--mobile {
+    display: grid;
+  }
+  @media (min-width: 1024px) {
+    .nav-root.js .nav-icon--mobile {
+      display: none;
+    }
+  }
+
+  .nav-burger {
+    display: none;
+    place-items: center;
+    inline-size: 48px;
+    block-size: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-ground-raised);
+    cursor: pointer;
+    flex-shrink: 0;
+    /* sit ABOVE the full-screen drawer (z:70) within .nav-root's stacking
+       context, so the burger→X stays visible and tappable to close it
+       (the old narrow side-sheet never overlapped the burger; the full-screen
+       one does). */
+    position: relative;
+    z-index: 80;
+  }
+  .burger-lines {
+    display: block;
+    position: relative;
+    inline-size: 20px;
+    block-size: 14px;
+  }
+  .burger-lines span {
+    position: absolute;
+    inset-inline: 0;
+    block-size: 2px;
+    border-radius: 1px;
+    background: var(--color-on-ground);
+    transition:
+      inset-block-start var(--dur-base) var(--ease-smooth),
+      transform var(--dur-base) var(--ease-smooth);
+  }
+  .burger-lines span:first-child {
+    inset-block-start: 2px;
+  }
+  .burger-lines span:last-child {
+    inset-block-start: 10px;
+  }
+  .nav-burger[aria-expanded='true'] .burger-lines span:first-child {
+    inset-block-start: 6px;
+    transform: rotate(45deg);
+  }
+  .nav-burger[aria-expanded='true'] .burger-lines span:last-child {
+    inset-block-start: 6px;
+    transform: rotate(-45deg);
+  }
+
+  /* ============ no-JS story ============
+     Without JS the links + actions render at every width — plain anchors,
+     nothing needs JS. With JS: mobile collapses them into the burger+drawer;
+     desktop keeps the full bar and hides the burger. */
+  .nav-links,
+  .nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .nav-root.js .nav-links,
+  .nav-root.js .nav-actions {
+    display: none;
+  }
+  .nav-root.js .nav-burger {
+    display: grid;
+  }
+  @media (min-width: 1024px) {
+    .nav-root.js .nav-links {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .nav-root.js .nav-actions {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .nav-root.js .nav-burger {
+      display: none;
+    }
+  }
+
+  /* ============ drawer — inert without JS; ≥1024px it has no trigger either ============ */
+  .site-nav {
+    display: none;
+  }
+  .nav-root.js .site-nav {
+    display: flex;
+  }
+  @media (min-width: 1024px) {
+    .nav-root.js .site-nav {
+      display: none;
+    }
+  }
+
+  /* mobile-only drawer visuals (JS) — unchanged since R7.5 */
+  @media (max-width: 1023.98px) {
+    .nav-root.js .site-nav {
+      position: fixed;
+      /* Size in VIEWPORT units, not `inset:0`/percentages: .nav-root carries a
+         backdrop-filter (and, on Home, a transform) — both make it the containing
+         block for this fixed child, so `inset:0`/100% would size to the 60px bar,
+         not the screen (the real cause of the R7.5.2→R9 "drawer renders
+         inconsistently" note). dvh/vw ignore the containing block and fill the
+         viewport regardless. */
+      inset-block: 0 auto;
+      inset-inline: 0;
+      inline-size: 100vw;
+      block-size: 100dvh;
+      z-index: 70;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: stretch;
+      background: color-mix(in srgb, var(--color-ground-sunk) 45%, transparent);
+      visibility: hidden;
+      pointer-events: none;
+      opacity: 0;
+      /* R9 i18n: clip the off-canvas panel. The drawer hides via
+         transform:translateX(100%); in RTL that slides off the right (fine) but
+         in LTR (en/ru) it lands off the RIGHT edge and — because this fixed
+         container didn't clip — extended the page's horizontal scroll on every
+         non-clipping page. Clipping here bounds the off-canvas panel to the
+         viewport in BOTH directions; the open state (translateX(0), docked
+         inline-start) is unaffected. `clip` doesn't create a scroll container
+         or force overflow-y. */
+      overflow-x: clip;
+      transition:
+        opacity var(--dur-base) var(--ease-smooth),
+        visibility 0s linear var(--dur-base);
+    }
+    .nav-root.js .site-nav.is-open {
+      visibility: visible;
+      pointer-events: auto;
+      opacity: 1;
+      transition:
+        opacity var(--dur-base) var(--ease-smooth),
+        visibility 0s;
+    }
+    /* ---- full-screen cinematic menu (R10, owner 2026-07-13: "full-screen,
+       big spacing between sections, clear and elegant") ----
+       The surface is a deep espresso wall filling the viewport; content is
+       centered with generous section rhythm. Signature = oversized Blender-Black
+       links; everything else stays quiet. */
+    .nav-root.js .nav-panel {
+      inline-size: 100%;
+      block-size: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      /* owner, 2026-07-23: these gaps were nearly collapsed to zero —
+         `--space-5`/`--space-10` don't exist in tokens.css (real scale:
+         1/2/3/4/6/8/12/16/24/32), so the clamp()s were invalid and fell back
+         to `gap: normal` (~0). Fixed to the SAME clamp as .roadmap's own
+         item-to-item gap below, so the lang-switcher/reserve/roadmap/contact
+         rhythm reads as one consistent scale, not tight-then-loose. */
+      gap: clamp(var(--space-2), 1.4vh, var(--space-4));
+      padding-block: calc(var(--nav-bar-height) + var(--space-8)) var(--space-12);
+      padding-inline: var(--space-6);
+      background: color-mix(in srgb, var(--color-ground-sunk) 97%, transparent);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      overflow-y: auto;
+      /* a whisper of scale-settle under the container's opacity fade */
+      transform: scale(1.015);
+      transition: transform var(--dur-base) var(--ease-smooth);
+    }
+    .nav-root.js .site-nav.is-open .nav-panel {
+      transform: none;
+    }
+    .nav-root.js .nav-panel > .lang-switcher {
+      justify-content: center;
+    }
+    /* Reserve — the single red accent, a contained pill (not full-bleed) */
+    .nav-root.js .drawer-book {
+      inline-size: auto;
+      min-inline-size: 14rem;
+      min-block-size: 54px;
+      padding-inline: var(--space-8); /* was --space-10, undefined — see gap note above */
+      border-radius: 999px;
+      font-size: var(--text-lg);
+    }
+    .nav-root.js .roadmap {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(var(--space-2), 1.4vh, var(--space-4));
+    }
+    /* oversized links — Blender-Black, centered, whitespace instead of rules */
+    .nav-root.js .station a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-block-size: 48px;
+      padding-inline: var(--space-2);
+      font-size: clamp(1.6rem, 6.4vw, 2.6rem);
+      line-height: 1.05;
+      font-weight: var(--weight-display);
+      letter-spacing: -0.01em;
+      color: var(--color-text);
+      transition: color var(--dur-fast) var(--ease-smooth);
+    }
+    .nav-root.js .station a:hover .label,
+    .nav-root.js .station a:focus-visible .label {
+      color: var(--color-on-ground);
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
+    }
+    /* current page — cotto underline (state marker; red stays the CTA's alone) */
+    .nav-root.js .station a[aria-current='page'] .label {
+      color: var(--color-on-ground);
+      text-decoration: underline;
+      text-decoration-color: var(--color-warm-surface);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
+    }
+    /* contact icons — plain, large, red; no border/pill/number text (owner,
+       2026-07-23: replaces the old outline pill + phone-number label) */
+    .nav-root.js .contact-icons {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .nav-root.js .contact-icon {
+      display: grid;
+      place-items: center;
+      inline-size: 56px;
+      block-size: 56px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      transition: background var(--dur-fast) var(--ease-smooth);
+    }
+    .nav-root.js .contact-icon:hover,
+    .nav-root.js .contact-icon:focus-visible {
+      background: var(--color-primary-hover);
+    }
+    /* whispered stagger-rise on open (killed globally by prefers-reduced-motion) */
+    .nav-root.js .site-nav .station,
+    .nav-root.js .site-nav .drawer-book,
+    .nav-root.js .site-nav .contact-icons {
+      opacity: 0;
+      translate: 0 16px;
+      transition:
+        opacity var(--dur-base) var(--ease-smooth),
+        translate var(--dur-base) var(--ease-smooth);
+    }
+    .nav-root.js .site-nav.is-open .station,
+    .nav-root.js .site-nav.is-open .drawer-book,
+    .nav-root.js .site-nav.is-open .contact-icons {
+      opacity: 1;
+      translate: none;
+      transition-delay: calc(60ms + var(--i, 0) * 45ms);
+    }
+  }
+</style>

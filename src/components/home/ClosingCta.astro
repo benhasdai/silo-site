@@ -1,0 +1,76 @@
+---
+// SILO home — R14-T9 closing CTA beat. Last section before the footer: a
+// centered heading + the two conversion paths (reserve / event), reusing the
+// shared .btn system so this never invents new button chrome. Reserve opens
+// Ontopo in a new tab (external, matches Nav's own reserve link); event
+// booking stays same-tab, locale-aware via the caller's `loc()` helper.
+// R14 rev: menu link retired in favor of an event-booking CTA (owner rev).
+interface Props {
+  heading: string;
+  reserveHref: string;
+  reserveLabel: string;
+  eventHref: string;
+  eventLabel: string;
+}
+
+const { heading, reserveHref, reserveLabel, eventHref, eventLabel } = Astro.props;
+---
+
+<section class="cta-close" data-reveal>
+  <div class="container cta-close__inner">
+    <h2 class="cta-close__heading">{heading}</h2>
+    <div class="cta-close__actions">
+      <a class="btn btn-primary" href={reserveHref} target="_blank" rel="noopener">{reserveLabel}</a>
+      <a class="btn btn-outline" href={eventHref}>{eventLabel}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-close {
+    padding-block: var(--space-16);
+    text-align: center;
+    /* thin espresso separation, same hairline language as CinemaBand */
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ground-sunk) 70%, transparent);
+  }
+  @media (min-width: 768px) {
+    .cta-close {
+      padding-block: var(--space-24);
+    }
+  }
+
+  .cta-close__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .cta-close__heading {
+    /* Owner ruling (2026-07-22): named exception to Blender-only — this one
+       heading is set in the brand's marketing Latin face. See global.css'
+       @font-face comment for scope; do not extend to other elements without
+       a fresh owner ruling. */
+    font-family: 'Trajan Pro', var(--font-family);
+    font-weight: 700;
+    font-size: clamp(var(--text-xl), 6vw, var(--text-2xl));
+    max-inline-size: 20ch;
+    text-wrap: balance;
+  }
+
+  .cta-close__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4);
+  }
+
+  /* shared scroll-reveal contract — see src/scripts/home.ts initReveals(). */
+  [data-reveal] {
+    transition: opacity 0.9s var(--ease-smooth), transform 0.9s var(--ease-smooth);
+  }
+  [data-reveal].is-pre {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+</style>

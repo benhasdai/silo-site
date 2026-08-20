@@ -1,0 +1,66 @@
+# SILO — build the Astro static site and deploy it to GitHub Pages.
+# R14 migration (2026-07-15): replaces Netlify. Deploy model is now
+# push-to-main → this workflow → Pages. Custom domain (silo.co.il) is set via
+# public/CNAME + repo Pages settings; DNS cutover is the owner-gated final step.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Rebuild every 15 minutes so menu edits in the Google Sheet reach the site
+  # on their own — no button, no code push. Free on a public repo; sheet fetch
+  # failure keeps the bundled snapshot, so this can never break the site.
+  schedule:
+    - cron: '*/15 * * * *'
+
+# Least-privilege token that can publish a Pages deployment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One live deploy at a time; don't cancel an in-flight publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # Menu-content Google Sheet (link-view only; menu data is public
+          # anyway). fetch-content.mjs falls back to the bundled snapshot on
+          # any fetch failure — this can never break the build.
+          SHEET_ID: 1EeU1AeMdurPK0h_fSVBP8GzfvoxRryl52Y8AfPiBtpo
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

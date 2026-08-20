@@ -1,0 +1,18 @@
+---
+// Task 12 — Events page. Layout API per docs/contracts.md (frozen).
+// R9 i18n — Hebrew route (default, unprefixed): body components now take a
+// `locale` prop; title/description come from the events strings module.
+import Layout from '../layouts/Layout.astro';
+import EventsHero from '../components/events/EventsHero.astro';
+import HostingShowcase from '../components/events/HostingShowcase.astro';
+import { events } from '../i18n/pages/events';
+
+const t = events.he;
+---
+<Layout title={t.pageTitle} description={t.pageDescription} current="events" navMode="static" locale="he">
+  <EventsHero locale="he" />
+  <HostingShowcase locale="he" />
+  <script>
+    import '../scripts/events';
+  </script>
+</Layout>

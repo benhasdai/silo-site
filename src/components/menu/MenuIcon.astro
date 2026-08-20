@@ -1,0 +1,59 @@
+---
+/* Task 11 — inline SVG icon set for the menu.
+   Stroke-based line icons, currentColor only (no raw hex — palette rule).
+   With `label` → announced (role="img" + Hebrew aria-label); without → decorative. */
+import type { MenuIconName } from './menu-data';
+
+interface Props {
+  name: MenuIconName;
+  label?: string;
+  class?: string;
+}
+
+const { name, label, class: className } = Astro.props;
+
+const PATHS: Record<MenuIconName, string> = {
+  // dietary
+  vegan:
+    '<path d="M19.5 4.5C12 4.5 6.5 9 6.5 15.5c0 2.2 1.8 4 4 4 6.5 0 9-7.5 9-15Z"/><path d="M4.5 19.5C6.5 13.5 11 9.5 15.5 8"/>',
+  gluten_free:
+    '<path d="M12 21.5V6.5"/><path d="M12 11.5C12 9.3 10.3 7.5 8 7.3c0 2.2 1.7 4 4 4.2Z"/><path d="M12 11.5c0-2.2 1.7-4 4-4.2 0 2.2-1.7 4-4 4.2Z"/><path d="M12 16.5c0-2.2-1.7-4-4-4.2 0 2.2 1.7 4 4 4.2Z"/><path d="M12 16.5c0-2.2 1.7-4 4-4.2 0 2.2-1.7 4-4 4.2Z"/><path d="m4.5 4.5 15 15"/>',
+  // allergens
+  gluten:
+    '<path d="M12 21.5V7"/><path d="M12 7c0-2.2-1.7-4-4-4.2 0 2.2 1.7 4 4 4.2Z"/><path d="M12 7c0-2.2 1.7-4 4-4.2 0 2.2-1.7 4-4 4.2Z"/><path d="M12 12c0-2.2-1.7-4-4-4.2 0 2.2 1.7 4 4 4.2Z"/><path d="M12 12c0-2.2 1.7-4 4-4.2 0 2.2-1.7 4-4 4.2Z"/><path d="M12 17c0-2.2-1.7-4-4-4.2 0 2.2 1.7 4 4 4.2Z"/><path d="M12 17c0-2.2 1.7-4 4-4.2 0 2.2-1.7 4-4 4.2Z"/>',
+  dairy:
+    '<path d="M9.5 2.5h5"/><path d="M10 2.5V6l-2.2 4v9a2.5 2.5 0 0 0 2.5 2.5h3.4a2.5 2.5 0 0 0 2.5-2.5v-9L14 6V2.5"/><path d="M7.8 13.5h8.4"/>',
+  egg: '<path d="M12 2.8c-3.6 0-6.4 6.2-6.4 10.4a6.4 6.4 0 0 0 12.8 0C18.4 9 15.6 2.8 12 2.8Z"/>',
+  fish:
+    '<path d="M2.5 12c2.7-4 6.4-6 9.7-6 2.9 0 5.2 2.2 6.3 6-1.1 3.8-3.4 6-6.3 6-3.3 0-7-2-9.7-6Z"/><path d="m18.5 12 3.2-3.6-.8 3.6.8 3.6L18.5 12Z"/><circle cx="14.6" cy="10.4" r="0.9" fill="currentColor" stroke="none"/>',
+  nuts:
+    '<path d="M6.8 9.5c0-3 2.2-5.3 5.2-5.3s5.2 2.3 5.2 5.3"/><path d="M6 9.5h12"/><path d="M6.8 9.5c0 5.4 3 8.6 5.2 10.3 2.2-1.7 5.2-4.9 5.2-10.3"/>',
+  sesame:
+    '<ellipse cx="12" cy="6.5" rx="2.1" ry="3.1"/><ellipse cx="7.5" cy="15" rx="2.1" ry="3.1" transform="rotate(-30 7.5 15)"/><ellipse cx="16.5" cy="15" rx="2.1" ry="3.1" transform="rotate(30 16.5 15)"/>',
+  // decorative (wine-cellar note)
+  wine: '<path d="M7.5 3h9c0 5.5-1.8 8.8-4.5 8.8S7.5 8.5 7.5 3Z"/><path d="M12 11.8V20"/><path d="M8.5 20.5h7"/>',
+};
+
+const svgAttrs = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': '1.7',
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+  focusable: 'false',
+};
+---
+
+{
+  label ? (
+    <span class:list={['micon', className]} role="img" aria-label={label}>
+      <svg {...svgAttrs} set:html={PATHS[name]} />
+    </span>
+  ) : (
+    <span class:list={['micon', className]} aria-hidden="true">
+      <svg {...svgAttrs} set:html={PATHS[name]} />
+    </span>
+  )
+}

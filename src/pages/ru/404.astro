@@ -1,0 +1,13 @@
+---
+/* R9 i18n — Russian /ru/404 route (real page, never translate.goog). Same
+   body as the Hebrew page — see components/NotFoundPage.astro. */
+import Layout from '../../layouts/Layout.astro';
+import NotFoundPage from '../../components/NotFoundPage.astro';
+import { notfound } from '../../i18n/pages/notfound';
+
+const t = notfound.ru;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="home" navMode="static" locale="ru">
+  <NotFoundPage locale="ru" />
+</Layout>

@@ -1,0 +1,14 @@
+---
+// SILO — גיפט קארד (Hebrew, default locale, unprefixed route).
+// R9 i18n: page body now lives in components/GiftcardPage.astro, shared
+// with /en/giftcard and /ru/giftcard — see that file for markup/logic.
+import Layout from '../layouts/Layout.astro';
+import GiftcardPage from '../components/GiftcardPage.astro';
+import { giftcard } from '../i18n/pages/giftcard';
+
+const t = giftcard.he;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="giftcard" navMode="static" locale="he">
+  <GiftcardPage locale="he" />
+</Layout>

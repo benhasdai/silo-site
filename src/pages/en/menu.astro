@@ -1,0 +1,13 @@
+---
+/* R9 i18n — English /en/menu route (real page, never translate.goog). Same
+   body as the Hebrew page — see components/menu/MenuPage.astro. */
+import Layout from '../../layouts/Layout.astro';
+import MenuPage from '../../components/menu/MenuPage.astro';
+import { UI } from '../../i18n/ui-strings';
+
+const t = UI.en.menu;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="menu" navMode="static" locale="en">
+  <MenuPage locale="en" />
+</Layout>

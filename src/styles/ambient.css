@@ -1,0 +1,25 @@
+/* SILO ambient — R7.1-C: the espresso ground gets cinematic depth from one fixed
+   warm radial wash, not a flat fill. The R5 wheat-seed scatter (AmbientSeeds.astro)
+   is retired — it read as dirt on cream, and the dark ground doesn't need it: depth
+   now comes from this wash plus typographic hierarchy and rhythm. Non-interactive,
+   fixed, behind all content. */
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 70% at 50% 0%,
+      color-mix(in srgb, var(--color-warm-surface) 8%, transparent) 0%,
+      color-mix(in srgb, var(--color-warm-surface) 3%, transparent) 34%,
+      transparent 64%
+    ),
+    radial-gradient(
+      90% 50% at 85% 100%,
+      color-mix(in srgb, var(--color-warm-surface) 5%, transparent) 0%,
+      transparent 58%
+    );
+}

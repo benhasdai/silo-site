@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://silo.co.il/schema/content.schema.json",
+  "title": "SILO Site Content",
+  "description": "Payload shape for the Google-Sheet-backed content: build-time snapshot (src/data/content-snapshot.json) and the runtime /api/content response (which additionally carries `stale`/`fetched_at`/`source`).",
+  "type": "object",
+  "required": ["menu_items", "events_menus", "site_notes"],
+  "additionalProperties": true,
+  "properties": {
+    "menu_items": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/MenuItem" }
+    },
+    "events_menus": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/EventsPackage" }
+    },
+    "site_notes": { "$ref": "#/definitions/SiteNotes" },
+    "stale": {
+      "type": "boolean",
+      "description": "true when the runtime function served the bundled last-good snapshot instead of a fresh Google Sheet fetch."
+    },
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of when this payload was produced (runtime function only)."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["sheet", "bundled"],
+      "description": "Where this payload's data came from (runtime function only)."
+    }
+  },
+  "definitions": {
+    "AllergenCode": {
+      "type": "string",
+      "enum": ["gluten", "nuts", "dairy", "egg", "fish", "sesame"]
+    },
+    "MenuTab": {
+      "type": "string",
+      "enum": ["restaurant", "business", "brunch", "cocktails", "wine", "desserts"]
+    },
+    "MenuCategory": {
+      "type": "string",
+      "enum": [
+        "starters", "salads", "pizzas", "pastas", "mains",
+        "desserts", "cocktails", "wine", "wine_glass", "alcohol"
+      ]
+    },
+    "MenuItem": {
+      "type": "object",
+      "required": [
+        "id", "tab", "category", "name_he", "desc_he", "price",
+        "vegan", "gluten_free", "allergens", "visible", "sort"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "tab": { "$ref": "#/definitions/MenuTab" },
+        "category": { "$ref": "#/definitions/MenuCategory" },
+        "name_he": { "type": "string", "minLength": 1 },
+        "desc_he": { "type": "string" },
+        "price": { "type": "number", "minimum": 0 },
+        "unit2_label": { "type": "string" },
+        "unit2_price": { "type": "number", "minimum": 0 },
+        "vegan": { "type": "boolean" },
+        "gluten_free": { "type": "boolean" },
+        "allergens": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AllergenCode" }
+        },
+        "visible": { "type": "boolean" },
+        "sort": { "type": "integer" },
+        "name_en": { "type": "string" },
+        "desc_en": { "type": "string" }
+      }
+    },
+    "EventsPackage": {
+      "type": "object",
+      "required": [
+        "id", "package_name", "desc", "price_pp", "min_guests",
+        "items", "visible", "sort"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "package_name": { "type": "string", "minLength": 1 },
+        "desc": { "type": "string" },
+        "price_pp": { "type": "number", "minimum": 0 },
+        "min_guests": { "type": "integer", "minimum": 0 },
+        "items": { "type": "string" },
+        "visible": { "type": "boolean" },
+        "sort": { "type": "integer" }
+      }
+    },
+    "SiteNotes": {
+      "type": "object",
+      "description": "Record<key, text_he>. The five keys below are read by the site; unknown extra keys are tolerated and ignored.",
+      "required": [
+        "wine_pouring_note", "allergen_note", "price_vat_note", "hours", "address"
+      ],
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "wine_pouring_note": { "type": "string" },
+        "allergen_note": { "type": "string" },
+        "price_vat_note": { "type": "string" },
+        "hours": { "type": "string" },
+        "address": { "type": "string" }
+      }
+    }
+  }
+}

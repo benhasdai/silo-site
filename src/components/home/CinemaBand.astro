@@ -1,0 +1,146 @@
+---
+// CinemaBand — one component, both cinema slots on Home (R8.1 "structure
+// lock"). Pure cinema: full-bleed footage or a labeled placeholder standing
+// in for it, no text/CTA overlays. clip.src === null renders the placeholder
+// (tint bg + centered quiet label + dashed hairline reading as a "film slot");
+// clip.src set renders the real <video> (R4 pattern, lazy-attached by the
+// existing home.ts initVideos() IO — no change needed there).
+// R9 i18n: optional `label` prop overrides clip.label so the caller (index.astro)
+// can pass a locale-translated placeholder string; falls back to clip.label
+// (home-videos.ts pool default) when omitted.
+// R14-T10: optional `caption` prop — an editorial line overlaid on the band
+// (real copy, not the placeholder label). Uses the shared [data-reveal]
+// contract (src/scripts/home.ts initReveals()) so it fades up independently
+// of the band's own GSAP scale-settle scrub.
+// R14 rev: caption promoted to "live text over the video" — scaled and
+// positioned to mirror Hero.astro's .hero-title (same display-tier color,
+// clamp'd display font, centered, strong text-shadow) instead of a small
+// lower-third line.
+import type { Clip } from '../../lib/home-videos';
+
+interface Props {
+  clip: Clip;
+  /** Optional anchor id — the first band is the hero down-arrow's scroll target
+      (R8.2: replaces the retired #club-gift Teasers section). */
+  id?: string;
+  /** Locale-translated override for the placeholder label (R9 i18n). */
+  label?: string;
+  /** Optional editorial caption overlaid on the band, lower area (R14-T10). */
+  caption?: string;
+}
+
+const { clip, id, label, caption } = Astro.props;
+const bandLabel = label ?? clip.label;
+---
+
+<div class="cinema-band" id={id} style={`--band-tint: ${clip.tint}`}>
+  <div class="cinema-band-frame" data-cinema-band>
+    {
+      clip.src ? (
+        <video
+          class="cinema-band-video"
+          data-video
+          muted
+          loop
+          playsinline
+          preload="none"
+          poster={clip.poster ?? undefined}
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <source data-src={clip.src} type="video/mp4" />
+        </video>
+      ) : (
+        <div class="cinema-band-placeholder" role="presentation">
+          <span class="cinema-band-label">{bandLabel}</span>
+        </div>
+      )
+    }
+  </div>
+  {caption && (
+    <p class="cinema-band-caption" data-reveal>{caption}</p>
+  )}
+</div>
+
+<style>
+  .cinema-band {
+    position: relative;
+    block-size: 78svh;
+    overflow: hidden;
+    isolation: isolate;
+    /* thin espresso separation between adjacent bands — air, not chrome */
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ground-sunk) 70%, transparent);
+  }
+
+  /* the scrubbed layer — kept separate from .cinema-band so the scale-settle
+     tween never touches the band's own border/box (R4 pattern: data-hero-frame
+     is likewise the inner wrapper, not the section). */
+  .cinema-band-frame {
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: hidden;
+    will-change: transform;
+  }
+
+  .cinema-band-video {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: center;
+    background: var(--color-ground-sunk);
+  }
+
+  .cinema-band-placeholder {
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    block-size: 100%;
+    background: var(--band-tint);
+    outline: 1px dashed color-mix(in srgb, var(--color-on-ground-soft) 40%, transparent);
+    outline-offset: -1px;
+  }
+
+  .cinema-band-label {
+    font-weight: var(--weight-heading);
+    font-size: var(--text-sm);
+    letter-spacing: 0.14em;
+    color: var(--color-on-ground-soft);
+  }
+
+  /* R14 rev: "live text over the video" — mirrors Hero.astro's .hero-title
+     treatment (same display-tier color/weight/scale, centered, balanced,
+     strong token-based shadow) instead of a small lower-third caption.
+     inset-block-start sits at ~38% of the band's own 78svh box — the same
+     ratio Hero uses for its title (38svh of a 100svh hero) — so the two
+     cinematic title treatments read as one language. The rem-based clamp
+     floor keeps it clear of the band's top edge on very short viewports. */
+  .cinema-band-caption {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 0;
+    inset-block-start: clamp(3rem, 38%, 60%);
+    margin: 0;
+    padding-inline: var(--space-6);
+    text-align: center;
+    color: var(--color-ink-display); /* linen — hero-over-video tier, holds AA over footage */
+    font-weight: var(--weight-display);
+    font-size: clamp(var(--text-2xl), 6vw, var(--text-3xl));
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-wrap: balance;
+    text-shadow:
+      0 1px 3px color-mix(in srgb, var(--color-ground-sunk) 55%, transparent),
+      0 2px 24px color-mix(in srgb, var(--color-ground-sunk) 62%, transparent);
+    pointer-events: none;
+  }
+
+  /* shared scroll-reveal contract — see src/scripts/home.ts initReveals(). */
+  [data-reveal] {
+    transition: opacity 0.9s var(--ease-smooth), transform 0.9s var(--ease-smooth);
+  }
+  [data-reveal].is-pre {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+</style>

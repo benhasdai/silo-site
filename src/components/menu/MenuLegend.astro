@@ -1,0 +1,36 @@
+---
+/* Task 11 — icon legend + standing notes (allergen note, price/VAT footnote).
+   The wine-pouring note renders inside the wine category (MenuSection). */
+import { getLegend } from './menu-data';
+import MenuIcon from './MenuIcon.astro';
+import { UI } from '../../i18n/ui-strings';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
+
+interface Props {
+  allergenNote?: string;
+  priceNote?: string;
+  locale?: Locale;
+}
+
+const { allergenNote, priceNote, locale = DEFAULT_LOCALE } = Astro.props;
+const legend = getLegend(locale);
+---
+
+<footer class="menu-footnotes">
+  <h2 class="legend-title" id="menu-legend-title">{UI[locale].menu.legend.title}</h2>
+  <ul class="legend" role="list" aria-labelledby="menu-legend-title">
+    {
+      legend.map((entry) => (
+        <li>
+          <MenuIcon name={entry.icon} />
+          {entry.label}
+        </li>
+      ))
+    }
+  </ul>
+  <div class="menu-notes">
+    {allergenNote && <p>{allergenNote}</p>}
+    {priceNote && <p>{priceNote}</p>}
+  </div>
+</footer>

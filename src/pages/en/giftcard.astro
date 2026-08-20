@@ -1,0 +1,13 @@
+---
+/* R9 i18n — English /en/giftcard route (real page, never translate.goog).
+   Same body as the Hebrew page — see components/GiftcardPage.astro. */
+import Layout from '../../layouts/Layout.astro';
+import GiftcardPage from '../../components/GiftcardPage.astro';
+import { giftcard } from '../../i18n/pages/giftcard';
+
+const t = giftcard.en;
+---
+
+<Layout title={t.pageTitle} description={t.pageDescription} current="giftcard" navMode="static" locale="en">
+  <GiftcardPage locale="en" />
+</Layout>

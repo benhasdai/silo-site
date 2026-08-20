@@ -1,0 +1,107 @@
+---
+// SILO base layout — FROZEN after foundation (only task 20 may edit; R9 i18n
+// round is the one other allowed touch, coordinated like task 20 did).
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '../styles/ambient.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { LOCALES, DEFAULT_LOCALE, dirFor, localizedPath, stripLocale, hasTranslation } from '../i18n/locales';
+import { UI } from '../i18n/ui-strings';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  title: string;
+  description?: string;
+  current?: 'home' | 'menu' | 'events' | 'accessibility' | 'club' | 'giftcard';
+  navMode?: 'spy' | 'static';
+  ogImage?: string;
+  locale?: Locale;
+}
+
+const {
+  title,
+  description = 'סילו – מסעדה איטלקית-ים תיכונית בלב פארק פרס בחולון. הזמנת שולחן, תפריט, אירועים.',
+  current = 'home',
+  navMode = 'static',
+  ogImage = '/og-default.jpg',
+  locale = DEFAULT_LOCALE,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://silo.co.il');
+const barePath = stripLocale(Astro.url.pathname);
+const showAlternates = hasTranslation(barePath);
+---
+<!doctype html>
+<html dir={dirFor(locale)} lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* R14 Pages migration: ported from Netlify public/_headers (headers are
+        lost on GitHub Pages). Only Referrer-Policy survives as a meta;
+        X-Content-Type-Options(nosniff), X-Frame-Options(SAMEORIGIN) and the
+        immutable-caching rules cannot be metas — accepted, see the brief. */}
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    {/* 2026-07-22 (owner-approved): a meta CSP, added now that /club and
+        /giftcard carry real sanctioned vendor iframes worth fencing in.
+        script-src/style-src keep 'unsafe-inline' — the JSON-LD structured-data
+        scripts (is:inline) and the per-component dynamic style={} attributes
+        (CinemaBand/Hero/Nav) need it, and there is no server here to mint
+        nonces. This is NOT XSS hardening (a page with no dynamic/user input
+        has little XSS surface to begin with) — its real job is blocking an
+        unexpected THIRD-PARTY script/frame/font/connect origin (e.g. a
+        supply-chain surprise), which frame-src/connect-src/font-src below
+        still meaningfully restrict. */}
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src 'self' https://valuecard.co.il; base-uri 'self'; form-action 'self' https://valuecard.co.il; object-src 'none';"
+    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      showAlternates && (
+        <>
+          {LOCALES.map((l) => (
+            <link rel="alternate" hreflang={l} href={new URL(localizedPath(barePath, l), Astro.site)} />
+          ))}
+          <link rel="alternate" hreflang="x-default" href={new URL(localizedPath(barePath, DEFAULT_LOCALE), Astro.site)} />
+        </>
+      )
+    }
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/blender-light.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/blender-bold.woff2" as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, canonical)} />
+    <meta property="og:locale" content={{ he: 'he_IL', en: 'en_US', ru: 'ru_RU' }[locale]} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, canonical)} />
+    <meta name="theme-color" content="#fffaed" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{UI[locale].skipLink}</a>
+    <Nav mode={navMode} current={current} locale={locale} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <script>
+      // Shared Lenis singleton — contracts.md: import nothing else; use window.__lenis.
+      import Lenis from 'lenis';
+      declare global {
+        interface Window { __lenis?: Lenis }
+      }
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const lenis = new Lenis({ autoRaf: true });
+        window.__lenis = lenis;
+      }
+    </script>
+  </body>
+</html>

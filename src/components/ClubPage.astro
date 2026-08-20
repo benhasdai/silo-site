@@ -1,0 +1,182 @@
+---
+// SILO — מועדון החברים. R11 "Direction B — The Table" shell, R12 simplification
+// (owner 2026-07-14): the native concierge form + the club-join.mts proxy are
+// RETIRED. Instead we embed Valuecard's own live membership form
+// (valuecard.co.il/Forms/<id>) in a single dressed iframe, kept inside our
+// hero + perks shell — same move as /giftcard. Guaranteed-working, no live
+// test needed; Valuecard owns the field contract + the member record. Refine
+// later. Self-scoped warm-cream palette (.clubx) — tokens.css is dark-espresso.
+import { VALUECARD_BALANCE_URL } from '../lib/links';
+import { club } from '../i18n/pages/club';
+import { DEFAULT_LOCALE } from '../i18n/locales';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const t = club[locale];
+
+// Valuecard's own hosted SILO club-membership form.
+const VALUECARD_CLUB_URL = 'https://valuecard.co.il/Forms/21BA18CA-D7F0-463D-84F4-565939F62B87';
+---
+
+<article class="clubx" dir={locale === 'he' ? 'rtl' : 'ltr'}>
+  <section class="cx-hero">
+    <img class="cx-hero__img" src="/media/club-hero.jpg" alt={t.heroAlt} />
+    <div class="cx-hero__scrim" aria-hidden="true"></div>
+    <div class="cx-hero__type">
+      <p class="cx-kicker">{t.kicker}</p>
+      <h1 class="cx-h1">{t.h1}</h1>
+      <p class="cx-hero__lead">{t.lead}</p>
+      <p class="cx-hero__sub">{t.subline}</p>
+    </div>
+    <button class="cx-arrow" type="button" data-cx-arrow aria-label={t.form.formTitle}>
+      <span class="cx-arrow__magnet"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 8l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>
+  </section>
+
+  <section class="cx-perks">
+    <p class="cx-perks__eyebrow">{t.perksEyebrow}</p>
+    {t.perks.map((p) => (
+      <div class="cx-perk">
+        <span class="cx-perk__n">{p.n}</span>
+        <div>
+          <p class="cx-perk__t">{p.title}</p>
+          <p class="cx-perk__b">{p.body}</p>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <section class="cx-embed" id="cx-embed">
+    <div class="cx-embed__intro">
+      <p class="cx-kicker cx-kicker--dark">{t.kicker}</p>
+      <h2 class="cx-embed__title">{t.form.formTitle}</h2>
+      <p class="cx-embed__sub">{t.form.formSub}</p>
+    </div>
+
+    <div class="cx-win">
+      <div class="cx-win__bar">
+        <span class="cx-win__lock"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 9V6a4 4 0 118 0v3M5 9h10v7H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> {t.form.formTitle}</span>
+      </div>
+      <iframe
+        class="cx-win__frame"
+        src={VALUECARD_CLUB_URL}
+        title={t.form.formTitle}
+        loading="lazy"
+        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+
+    <a class="cx-balance" href={VALUECARD_BALANCE_URL} target="_blank" rel="noopener">{t.balanceLink}</a>
+  </section>
+</article>
+
+<style>
+  .clubx {
+    --cream: #fffaed; --paper: #fffdf6; --ink: #241813; --ink-soft: #6f5a45;
+    --hair: #e7ddc6; --cotto: #a35a31; --red: #cd242f; --redh: #b43939;
+    --sage: #5a725a; --linen: #EDE0C6; --parch: #E0CDAA;
+    display: block; background: var(--cream); color: var(--ink);
+    font-weight: 300; line-height: 1.65; overflow-x: clip;
+  }
+  .clubx *, .clubx *::before, .clubx *::after { box-sizing: border-box; }
+
+  /* ---------- hero: photo carries the page, warmed per judge fix ---------- */
+  .cx-hero { position: relative; min-block-size: 100svh; overflow: hidden; background: #3a2a1e; }
+  .cx-hero__img {
+    position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover;
+    filter: saturate(1.1) brightness(1.08) contrast(1.02);
+  }
+  /* strong vertical lower-third — physical `to top` only (logical gradient
+     keywords are invalid CSS and silently void the whole layer, which is why
+     the old scrim never rendered). */
+  .cx-hero__scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(18,11,7,.95) 0%, rgba(18,11,7,.76) 20%, rgba(18,11,7,.44) 42%, rgba(18,11,7,.12) 60%, rgba(18,11,7,0) 74%);
+  }
+  .cx-hero__type {
+    position: absolute; inset-block-end: clamp(4.5rem, 10vh, 7rem); inset-inline: clamp(1.4rem, 6vw, 5.5rem);
+    max-inline-size: min(92%, 50rem); color: var(--linen);
+  }
+  .cx-kicker { font-weight: 700; font-size: .82rem; letter-spacing: .36em; color: var(--parch); margin: 0 0 1.1rem; }
+  .cx-kicker--dark { color: var(--cotto); }
+  .cx-h1 { font-weight: 900; font-size: clamp(2.6rem, 8vw, 5.6rem); line-height: .99; text-wrap: balance; text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 2px 22px rgba(0,0,0,.5); }
+  .cx-hero__lead { font-weight: 300; font-size: clamp(1rem, 2vw, 1.25rem); color: var(--cream); margin: 1.2rem 0 0; max-inline-size: 32rem; }
+  .cx-hero__sub { font-weight: 700; font-size: .95rem; color: var(--parch); margin: .8rem 0 0; }
+  .cx-arrow {
+    position: absolute; z-index: 3; inset-block-end: 26px; inset-inline: 0; margin-inline: auto;
+    inline-size: 52px; block-size: 52px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 1px solid rgba(255,250,237,.5); color: var(--cream);
+    background: rgba(30,18,12,.24); cursor: pointer; padding: 0;
+  }
+  .cx-arrow__magnet { display: inline-flex; will-change: transform; }
+  .cx-arrow__magnet svg { animation: cx-bob 2.6s cubic-bezier(.4,0,.2,1) infinite; }
+  @keyframes cx-bob { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+
+  /* ---------- perks: editorial numbered list, not identical cards ---------- */
+  .cx-perks { max-inline-size: 74rem; margin-inline: auto; padding: clamp(3.5rem, 9vw, 7rem) clamp(1.4rem, 6vw, 5.5rem) clamp(1rem, 3vw, 2rem); }
+  .cx-perks__eyebrow { font-weight: 700; letter-spacing: .3em; font-size: .78rem; color: var(--cotto); margin: 0 0 2rem; }
+  .cx-perk { display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; padding-block: 1.6rem; border-block-start: 1px solid var(--hair); align-items: baseline; }
+  .cx-perk:last-child { border-block-end: 1px solid var(--hair); }
+  .cx-perk__n { font-weight: 900; font-size: 1rem; color: var(--cotto); }
+  .cx-perk__t { font-weight: 700; font-size: clamp(1.2rem, 2.2vw, 1.6rem); margin: 0; }
+  .cx-perk__b { color: var(--ink-soft); margin: .3rem 0 0; max-inline-size: 42rem; }
+
+  /* ---------- embed: Valuecard's own membership form, dressed in our shell ---------- */
+  .cx-embed { max-inline-size: 66rem; margin-inline: auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.4rem, 6vw, 5.5rem) clamp(4rem, 8vw, 7rem); }
+  .cx-embed__intro { max-inline-size: 40rem; margin: 0 0 clamp(1.6rem, 3vw, 2.4rem); }
+  .cx-embed__title { font-weight: 900; font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.04; margin: 0 0 .5rem; }
+  .cx-embed__sub { color: var(--ink-soft); margin: 0; max-inline-size: 34rem; }
+
+  .cx-win { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 60px -34px rgba(36,24,19,.5); }
+  .cx-win__bar { display: flex; align-items: center; justify-content: space-between; padding: .8rem 1.2rem;
+    background: var(--ink); color: var(--cream); font-weight: 700; font-size: .82rem; }
+  .cx-win__lock { display: inline-flex; align-items: center; gap: .4rem; }
+  .cx-win__lock svg { flex: none; }
+  .cx-win__frame { display: block; inline-size: 100%; border: 0;
+    block-size: clamp(720px, 88svh, 1000px); background: var(--paper); }
+
+  .cx-balance { display: block; margin-block-start: 1.4rem; text-align: center; font-size: .82rem; color: var(--ink-soft);
+    text-decoration: underline; text-underline-offset: 3px; }
+  .cx-balance:hover, .cx-balance:focus-visible { color: var(--cotto); }
+
+  @media (prefers-reduced-motion: reduce) { .cx-arrow__magnet svg { animation: none; } }
+</style>
+
+<script>
+  type LenisLike = { scrollTo: (t: string | HTMLElement, o?: Record<string, unknown>) => void };
+  const lenis = () => (window as Window & { __lenis?: LenisLike }).__lenis;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // magnetic down-arrow → smooth pull to the embedded membership form
+  const arrow = document.querySelector<HTMLButtonElement>('[data-cx-arrow]');
+  if (arrow) {
+    arrow.addEventListener('click', () => {
+      const target = document.getElementById('cx-embed');
+      const l = lenis();
+      if (l && target) l.scrollTo(target, { duration: 1.4, easing: (t: number) => 1 - Math.pow(1 - t, 4), offset: -12 });
+      else target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    });
+    if (!reduced && window.matchMedia('(pointer: fine)').matches) {
+      const magnet = arrow.querySelector<HTMLElement>('.cx-arrow__magnet') ?? arrow;
+      let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+      const tick = () => {
+        cx += (tx - cx) * 0.16; cy += (ty - cy) * 0.16;
+        magnet.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
+        raf = Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1 ? requestAnimationFrame(tick) : 0;
+      };
+      window.addEventListener('pointermove', (e) => {
+        const r = arrow.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+        const within = Math.hypot(dx, dy) < 130;
+        tx = within ? dx * 0.35 : 0; ty = within ? dy * 0.35 : 0;
+        if (!raf) raf = requestAnimationFrame(tick);
+      }, { passive: true });
+    }
+  }
+</script>
