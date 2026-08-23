@@ -8,6 +8,8 @@ dist
 
 # internal docs are local-only — never in the public repo (owner ruling 2026-07-16)
 *.md
+!AGENTS.md
+!README.md
 
 # Claude-side working material — local-only, never in the public repo (2026-07-21)
 Claude/
