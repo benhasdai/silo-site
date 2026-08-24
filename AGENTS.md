@@ -31,3 +31,12 @@ belongs to the separate `silo-marketing` repository.
 - `npm run verify` must remain offline and reproducible from a clean checkout.
 - For an explicitly authorized production-content refresh, `npm run build` may
   use the public Sheet through `SHEET_ID`; ordinary code verification must not.
+
+## Completion
+
+- When the next in-scope action is unambiguous, complete it in the same task.
+- A status question or correction does not pause the standing task; answer it
+  briefly and continue.
+- Do not stop merely to report that an artifact is stale or needs an obvious
+  update. Stop only when the outcome is complete or progress needs an owner
+  decision, new authority, blocked access, or an irreversible action.
