@@ -30,6 +30,9 @@ belongs to the separate `silo-marketing` repository.
   code and evidence and require an independent minimal patch, risks, and
   verification path. Never send credentials or secret values, and verify its
   conclusions directly before applying them.
+- Agent-to-agent coordination, delegated prompts and results, code, tool input,
+  commits, pull requests, logs, and durable artifacts use English. Only
+  communication addressed directly to the owner uses Hebrew.
 
 ## Implementation standards
 
