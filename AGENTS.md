@@ -19,9 +19,9 @@ belongs to the separate `silo-marketing` repository.
 - Never infer prices, dietary flags, allergens, opening hours, or reviews.
 - Customer-visible design, copy, or brand changes require Ben's approval.
 - Keep private staff and operational data out of this public repository.
-- Do not run `scripts/deploy.py`, force-push, or publish directly from a local or
-  Codex cloud task. Production publication is a separate, explicitly authorized
-  action through the reviewed GitHub Pages workflow.
+- Do not force-push or publish directly from a local or Codex cloud task.
+  Production publication is a separate, explicitly authorized action through
+  the reviewed GitHub Pages workflow.
 - Do not fetch or edit the sibling brand repository from a site-only cloud task.
 
 ## Verification
