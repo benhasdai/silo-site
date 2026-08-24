@@ -28,6 +28,7 @@ import { ONTOPO_URL, ontopoUrl, INSTAGRAM_URL, FACEBOOK_URL } from '../lib/links
 import { homeVideos } from '../lib/home-videos';
 import { index } from '../i18n/pages/index';
 import { hasTranslation, localizedPath } from '../i18n/locales';
+import { serializeJsonLd } from '../lib/json-ld';
 
 const locale = 'he';
 const t = index.he;
@@ -93,7 +94,7 @@ const jsonLd = {
     eventLabel={t.closing.eventCta}
   />
 
-  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+  <script is:inline type="application/ld+json" set:html={serializeJsonLd(jsonLd)}></script>
 </Layout>
 
 <script>

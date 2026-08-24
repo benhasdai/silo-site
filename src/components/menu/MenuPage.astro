@@ -12,6 +12,7 @@ import { getTabs, getCategories } from './menu-data';
 import { translateNote } from '../../i18n/menu-content';
 import { UI } from '../../i18n/ui-strings';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
+import { serializeJsonLd } from '../../lib/json-ld';
 import type { Locale } from '../../i18n/locales';
 
 interface Props {
@@ -85,7 +86,7 @@ const menuSchema = {
 };
 ---
 
-<script type="application/ld+json" is:inline set:html={JSON.stringify(menuSchema)}></script>
+<script type="application/ld+json" is:inline set:html={serializeJsonLd(menuSchema)}></script>
 
 <div class="menu-page" data-menu-root>
   <header class="menu-header container">
