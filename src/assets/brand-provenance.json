@@ -1,0 +1,10 @@
+{
+  "sourceRepository": "silo-marketing",
+  "sourcePath": "brand",
+  "tokensSha256": "ed7e173f8bebefcba117feef838c9b63fb38540d201fc539abc5b3641a09bdb0",
+  "assets": {
+    "ident-logo.svg": "c58280ebabd259d772eaa60d00078d47a912c68c9d634f5c970c251815a3ce49",
+    "logo-cream.svg": "00022f0202b26426e3b6fa2d681edfeaa7fa8fb7d7a0afa90d64e31b996ede79",
+    "logo-red.svg": "6114e3d5c8ca0c5e7742de05ce296b3e8df65e79c155e50a5a91af615c6696fd"
+  }
+}
