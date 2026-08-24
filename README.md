@@ -39,6 +39,6 @@ ordinary site work must not edit them directly.
 
 ## Publication
 
-Do not run `scripts/deploy.py`, force-push, or deploy from a local/Codex cloud
-task. Publication happens only through the reviewed GitHub Pages workflow after
-an explicitly authorized merge or dispatch.
+Do not force-push or deploy from a local/Codex cloud task. Publication happens
+only through the reviewed GitHub Pages workflow after an explicitly authorized
+merge or dispatch.
