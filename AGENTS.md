@@ -13,6 +13,41 @@ belongs to the separate `silo-marketing` repository.
   content snapshot and brand publication record without requiring sibling folders,
   secrets, or live network access.
 
+## Operating standard
+
+- Define the concrete owner outcome before selecting a standard, architecture,
+  or tool.
+- For externally defined behavior, use current official documentation and
+  primary sources first; then compare it with repository contracts and direct
+  filesystem, Git, CI, deployment, and runtime evidence.
+- Direct current evidence outranks stale documentation but never overrides an
+  explicit owner ruling.
+- A hypothesis is only a question to test. The next action must test it before
+  design or implementation continues.
+- Label material claims `VERIFIED`, `OBSERVED`, `INFERRED`, or `UNKNOWN`, and
+  state what would confirm or reject an inference.
+- For external code review, give OpenRouter Ox Alpha the relevant non-secret
+  code and evidence and require an independent minimal patch, risks, and
+  verification path. Never send credentials or secret values, and verify its
+  conclusions directly before applying them.
+
+## Implementation standards
+
+- JavaScript uses Node.js 24 ECMAScript modules. Site code follows Astro's
+  current documented project structure: routes in `src/pages`, reusable UI in
+  `src/components`, shared page shells in `src/layouts`, processed styles in
+  `src/styles`, and unprocessed public files in `public`.
+- Keep business data and localization in their existing `src/data` and
+  `src/i18n` ownership boundaries. Repository-wide build and verification
+  automation belongs in `scripts`; browser-delivered source belongs under
+  `src`.
+- Documentation follows Diataxis. Consequential routing, publication, or data
+  boundary decisions use MADR under `docs/decisions/NNNN-short-title.md` if such
+  a decision record is needed. Operational how-to documents must identify
+  prerequisites, procedure, verification, failure behavior, and recovery.
+- Do not create a new top-level directory or document type unless Astro's
+  official structure or a proven repository responsibility requires it.
+
 ## Working rules
 
 - Do not edit `src/styles/tokens.css` or generated brand assets directly.
