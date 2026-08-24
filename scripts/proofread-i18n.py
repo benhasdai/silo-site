@@ -8,14 +8,8 @@ file to Gemini and asks ONLY for real errors: mistranslations, wrong meaning,
 unnatural phrasing, dropped nuance. It writes a human-readable report; it never
 edits the source files — fixing is a separate, reviewed step.
 
-Auth: the Google AI Studio key in the willow-vault (`general-key.enc`,
-confirmed by owner 2026-07-23). Sent as the `x-goog-api-key` HEADER, never in
-the URL query string (credentials never in URL params). The key is never
-printed — printing key material trips the auto-mode secret classifier and is
-wrong regardless.
-
-Google's free tier is a separate quota from OpenRouter, so this runs even when
-the OpenRouter catalog job is rate-limited.
+Auth: the `GOOGLE_AI_API_KEY` environment variable. It is sent as the
+`x-goog-api-key` header, never in the URL query string, and is never printed.
 
 Usage:
     python3 proofread-i18n.py            # proofread all i18n page files
@@ -23,7 +17,7 @@ Usage:
 """
 import argparse
 import json
-import subprocess
+import os
 import sys
 import time
 import urllib.error
@@ -33,10 +27,6 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]          # silo-site/
 I18N = REPO / "src" / "i18n" / "pages"
 REPORT = Path(__file__).resolve().parent.parent / "off" / "proofread-report.md"
-
-VAULT = Path.home() / ".claude" / "secrets" / "willow-vault"
-VAULT_KEY = VAULT / "general-key.enc"                # Google AI Studio key
-VAULT_PASS = VAULT / ".pass"
 
 MODEL = "gemini-flash-lite-latest"
 ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
@@ -70,15 +60,11 @@ RESPONSE_SCHEMA = {
 }
 
 
-def decrypt_key() -> str:
-    out = subprocess.run(
-        ["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-iter", "200000", "-d",
-         "-in", str(VAULT_KEY), "-pass", f"file:{VAULT_PASS}"],
-        capture_output=True, text=True,
-    )
-    if out.returncode != 0 or not out.stdout.strip():
-        sys.exit(f"Failed to decrypt Google key: {out.stderr.strip()}")
-    return out.stdout.strip()
+def load_api_key() -> str:
+    api_key = os.environ.get("GOOGLE_AI_API_KEY", "").strip()
+    if not api_key:
+        sys.exit("GOOGLE_AI_API_KEY is required.")
+    return api_key
 
 
 def proofread(text: str, api_key: str) -> list | dict:
@@ -131,7 +117,7 @@ def main():
     if not files:
         sys.exit(f"No i18n files found in {I18N}")
 
-    api_key = decrypt_key()
+    api_key = load_api_key()
     print(f"Proofreading {len(files)} files with {MODEL}\n")
 
     lines = [f"# Translation proofread report", "",

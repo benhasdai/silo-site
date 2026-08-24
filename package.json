@@ -8,12 +8,13 @@
   "scripts": {
     "dev": "astro dev",
     "validate:runtime": "node scripts/check-runtime.mjs",
+    "validate:portability": "node scripts/check-portability.mjs",
     "validate:content": "node scripts/validate-content.mjs",
     "validate:brand": "node scripts/check-brand.mjs",
     "test:json-ld": "node scripts/json-ld.test.mjs",
     "build": "node scripts/fetch-content.mjs && npm run validate:content && npm run validate:brand && astro build",
     "build:offline": "npm run validate:content && npm run validate:brand && astro build",
-    "verify": "npm run validate:runtime && npm run test:json-ld && npm run build:offline && node scripts/check-dist.mjs",
+    "verify": "npm run validate:runtime && npm run validate:portability && npm run test:json-ld && npm run build:offline && node scripts/check-dist.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
