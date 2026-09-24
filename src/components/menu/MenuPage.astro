@@ -249,9 +249,11 @@ const menuSchema = {
   /* Mobile + JS: the tab bar docks to the bottom edge — one-handed thumb reach
      at the table. (No-JS keeps the in-flow anchor bar at the top.)
      The dock is a cotto surface so the menu switcher reads as navigation, not
-     as page chrome on the same espresso as the dishes: cream labels on cotto
-     (4.96:1), the current menu an inset espresso-sunk pill with parchment ink
-     (12.1:1 text; pill vs cotto 3.66:1, bar vs ground 3.34:1 — both ≥3:1 UI). */
+     as page chrome on the same espresso as the dishes. Each menu is a bounded
+     espresso-sunk tile with parchment ink (12.1:1; tile vs cotto 3.66:1, bar vs
+     ground 3.34:1 — both ≥3:1 UI); the current one inverts to a parchment tile
+     with sunk ink (12.1:1), as the language switcher does. Parchment never sits
+     directly on cotto (3.32:1). */
   @media (max-width: 767px) {
     .js-menu .menu-tabs {
       position: fixed;
@@ -264,9 +266,9 @@ const menuSchema = {
       padding-block-end: env(safe-area-inset-bottom, 0px);
     }
     .js-menu .menu-tabs-list {
-      gap: 0;
-      padding: var(--space-1);
-      /* no edge fade: it would wash out the pill on the first and last tab */
+      gap: var(--space-1);
+      padding: var(--space-2);
+      /* no edge fade: it would wash out the first and last tile */
       mask-image: none;
     }
     /* equal columns, floored at the longest word so no label is ever cut
@@ -277,9 +279,10 @@ const menuSchema = {
     }
     .js-menu .menu-tab {
       inline-size: 100%;
-      min-block-size: 52px;
+      min-block-size: 48px;
       padding: var(--space-1);
-      color: var(--color-on-warm);
+      background: var(--color-ground-sunk);
+      color: var(--color-on-ground);
       font-size: var(--text-sm);
       line-height: 1.15;
       white-space: normal;
@@ -299,23 +302,26 @@ const menuSchema = {
       text-overflow: ellipsis;
       min-inline-size: 0;
     }
-    /* keep cream on cotto — the base hover's parchment is 3.32:1 there and
-       sticks after a tap on touch screens */
-    .js-menu .menu-tab:hover {
-      color: var(--color-on-warm);
-    }
     /* inset ring — the scrolling list would clip the global outside offset.
-       Parchment ring: 3.32:1 on cotto, 12.1:1 on the active pill. */
+       Parchment on the sunk tiles, sunk on the parchment one (both 12.1:1). */
     .js-menu .menu-tab:focus-visible {
       outline-offset: -2px;
     }
     .js-menu .menu-tab.is-active {
-      background: var(--color-ground-sunk);
-      color: var(--color-on-ground);
+      background: var(--color-on-ground);
+      color: var(--color-ground-sunk);
+      outline-color: var(--color-ground-sunk);
     }
     /* keep the last items clear of the docked bar */
     .js-menu .menu-page {
       padding-block-end: calc(var(--space-24) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+  /* 320px-class phones: tighten the dock so all six Hebrew tiles still fit */
+  @media (max-width: 359px) {
+    .js-menu .menu-tabs-list {
+      gap: 2px;
+      padding-inline: var(--space-1);
     }
   }
 
