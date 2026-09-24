@@ -247,7 +247,11 @@ const menuSchema = {
   }
 
   /* Mobile + JS: the tab bar docks to the bottom edge — one-handed thumb reach
-     at the table. (No-JS keeps the in-flow anchor bar at the top.) */
+     at the table. (No-JS keeps the in-flow anchor bar at the top.)
+     The dock is a cotto surface so the menu switcher reads as navigation, not
+     as page chrome on the same espresso as the dishes: cream labels on cotto
+     (4.96:1), the current menu an inset espresso-sunk pill with parchment ink
+     (12.1:1 text; pill vs cotto 3.66:1, bar vs ground 3.34:1 — both ≥3:1 UI). */
   @media (max-width: 767px) {
     .js-menu .menu-tabs {
       position: fixed;
@@ -255,30 +259,37 @@ const menuSchema = {
       inset-block-end: 0;
       inset-inline: 0;
       border-block-end: none;
-      border-block-start: 1px solid var(--menu-hairline);
+      background: var(--color-warm-surface);
       box-shadow: var(--menu-bar-shadow);
       padding-block-end: env(safe-area-inset-bottom, 0px);
     }
     .js-menu .menu-tabs-list {
       gap: 0;
-      padding-inline: 0;
-      overflow: visible;
+      padding: var(--space-1);
+      /* no edge fade: it would wash out the pill on the first and last tab */
+      mask-image: none;
     }
+    /* equal columns, floored at the longest word so no label is ever cut
+       ("קוקטיילים" lost its last letter at ≤375px). When the floors can't fit
+       (long Russian labels), the base list's overflow-x lets the dock scroll. */
     .js-menu .menu-tabs-item {
       flex: 1 1 0;
-      min-inline-size: 0;
     }
     .js-menu .menu-tab {
       inline-size: 100%;
-      min-block-size: 56px;
+      min-block-size: 52px;
       padding: var(--space-1);
+      color: var(--color-on-warm);
       font-size: var(--text-sm);
       line-height: 1.15;
       white-space: normal;
       text-align: center;
       text-wrap: balance;
       border-block-end: none;
-      border-block-start: 3px solid transparent;
+      border-radius: var(--radius-md);
+      transition:
+        background var(--dur-fast) var(--ease-smooth),
+        color var(--dur-fast) var(--ease-smooth);
       /* was `anywhere` — broke single words mid-letter ("קוקטיילים" ->
          "קוקטיילי"/"ם"); `normal` still lets 2-word labels wrap at the space,
          which is all this was ever meant to do. */
@@ -288,9 +299,19 @@ const menuSchema = {
       text-overflow: ellipsis;
       min-inline-size: 0;
     }
+    /* keep cream on cotto — the base hover's parchment is 3.32:1 there and
+       sticks after a tap on touch screens */
+    .js-menu .menu-tab:hover {
+      color: var(--color-on-warm);
+    }
+    /* inset ring — the scrolling list would clip the global outside offset.
+       Parchment ring: 3.32:1 on cotto, 12.1:1 on the active pill. */
+    .js-menu .menu-tab:focus-visible {
+      outline-offset: -2px;
+    }
     .js-menu .menu-tab.is-active {
-      /* R7.1-C Option A: cotto state indicator, matches the desktop tab bar */
-      border-block-start-color: var(--color-warm-surface);
+      background: var(--color-ground-sunk);
+      color: var(--color-on-ground);
     }
     /* keep the last items clear of the docked bar */
     .js-menu .menu-page {
