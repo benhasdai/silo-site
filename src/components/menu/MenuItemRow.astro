@@ -33,34 +33,40 @@ const l = UI[locale].menu.legend;
   data-gf={item.gluten_free ? '1' : '0'}
 >
   <div class="item-head">
-    <Name class="item-name">{item.display_name}</Name>
+    <div class="item-line">
+      <Name class="item-name">{item.display_name}</Name>
+      {
+        (item.vegan || item.gluten_free) && (
+          <span class="item-diet">
+            {item.vegan && <MenuIcon name="vegan" label={l.vegan} />}
+            {item.gluten_free && <MenuIcon name="gluten_free" label={l.gluten_free} />}
+          </span>
+        )
+      }
+      {
+        /* price 0 = included in a fixed-price format (brunch/business choices) — no leader/number */
+        item.price > 0 && (
+          <>
+            <span class="item-leader" aria-hidden="true" />
+            <p class="item-price">
+              <span class="notranslate"><span class="price-num" data-price>{item.price}</span></span>
+              <span class="visually-hidden">{t.currencyWord}</span>
+            </p>
+          </>
+        )
+      }
+    </div>
     {
-      (item.vegan || item.gluten_free) && (
-        <span class="item-diet">
-          {item.vegan && <MenuIcon name="vegan" label={l.vegan} />}
-          {item.gluten_free && <MenuIcon name="gluten_free" label={l.gluten_free} />}
-        </span>
-      )
-    }
-    {
-      /* price 0 = included in a fixed-price format (brunch/business choices) — no leader/number */
-      item.price > 0 && (
-        <>
-          <span class="item-leader" aria-hidden="true" />
-          <p class="item-price">
-            <span class="notranslate"><span class="price-num" data-price>{item.price}</span></span>
-            <span class="visually-hidden">{t.currencyWord}</span>
-            {hasUnit2 && (
-              <span class="item-unit2">
-                <span>{item.display_unit2_label}</span>
-                <span class="notranslate">
-                  <span class="price-num" data-price-unit2>{item.unit2_price}</span>
-                </span>
-                <span class="visually-hidden">{t.currencyWord}</span>
-              </span>
-            )}
-          </p>
-        </>
+      /* second price (glass/bottle, add-on) sits beside the first and drops to
+         its own line under it only when the row can't hold both */
+      item.price > 0 && hasUnit2 && (
+        <p class="item-unit2">
+          <span>{item.display_unit2_label}</span>
+          <span class="notranslate">
+            <span class="price-num" data-price-unit2>{item.unit2_price}</span>
+          </span>
+          <span class="visually-hidden">{t.currencyWord}</span>
+        </p>
       )
     }
   </div>

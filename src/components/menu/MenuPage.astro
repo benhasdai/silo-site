@@ -577,6 +577,8 @@ const menuSchema = {
     padding: 0;
     margin-block-start: var(--space-8);
     display: grid;
+    /* one track that never outgrows the column, whatever a row's min-content */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
   }
   /* R8.4: the one, consistent breath between the sticky filter bar and the
@@ -617,11 +619,25 @@ const menuSchema = {
   }
 
   /* ---------- dish rows — classic printed-menu "name … price" ---------- */
+  /* the head is the name … price line plus an optional second price. The line
+     never wraps; its basis is 0 and its floor is its min-content, so the
+     second price stays beside the first while the name can still wrap to fit,
+     and drops under it (end-aligned) only when even the narrowest line can't
+     share the row — long ru/en add-on labels used to squash the dish name
+     and push the list past a 320-390px screen. */
   .item-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-2);
+  }
+  .item-line {
+    flex: 1 1 0;
+    min-inline-size: min-content;
     display: flex;
     align-items: baseline;
     gap: var(--space-2);
-    flex-wrap: nowrap;
   }
   .item-name {
     font-size: var(--text-lg);
@@ -655,6 +671,7 @@ const menuSchema = {
     min-inline-size: 2ch;
   }
   .item-unit2 {
+    flex: none;
     display: inline-flex;
     align-items: baseline;
     gap: var(--space-2);
