@@ -13,7 +13,7 @@
  * scroll-margin-block-start so CSS stays the single source of truth.
  */
 
-type LenisLike = { scrollTo: (target: Element, opts?: Record<string, unknown>) => void };
+type LenisLike = { scrollTo: (target: Element | number, opts?: Record<string, unknown>) => void };
 
 const root = document.querySelector<HTMLElement>('[data-menu-root]');
 if (root) enhance(root);
@@ -75,7 +75,15 @@ function enhance(page: HTMLElement): void {
     const lenis = (window as unknown as { __lenis?: LenisLike }).__lenis;
     const offset = Number.parseFloat(getComputedStyle(el).scrollMarginBlockStart || '0') || 0;
     if (lenis && typeof lenis.scrollTo === 'function') {
-      lenis.scrollTo(el, { offset: -offset });
+      // Hand Lenis an absolute position measured from the native scroll: it
+      // resolves element targets against its own animated position, which is
+      // stale right after a tab switch shrinks the page (the browser clamps
+      // scrollY before Lenis hears of it), and it already subtracts
+      // scroll-margin itself — the element + offset call landed hundreds of
+      // pixels off. The immediate call resyncs Lenis before it animates.
+      const target = el.getBoundingClientRect().top + window.scrollY - offset;
+      lenis.scrollTo(window.scrollY, { immediate: true });
+      lenis.scrollTo(target);
     } else {
       el.scrollIntoView({ block: 'start' });
     }

@@ -129,10 +129,10 @@ const menuSchema = {
     /* R7.1-C: the bar shadow must stay a fixed dark regardless of the ground flip
        (--color-text is now cream and would render as a pale glow, not a shadow) */
     --menu-bar-shadow: 0 -4px 24px color-mix(in srgb, var(--color-ground-sunk) 35%, transparent);
-    /* room the sticky filter row needs above anchored content (mobile) —
-       plus the persistent nav bar (R7.5), which every sticky row below it
-       must now also clear */
-    --menu-sticky-offset: calc(4.75rem + var(--nav-bar-height));
+    /* room the sticky rows need above anchored content (mobile): tab bar
+       (52px + hairline) + filter row + breath — plus the persistent nav bar
+       (R7.5), which every sticky row below it must now also clear */
+    --menu-sticky-offset: calc(53px + 4.75rem + var(--nav-bar-height));
     padding-block-start: var(--space-6);
     padding-block-end: var(--space-16);
   }
@@ -246,39 +246,32 @@ const menuSchema = {
     }
   }
 
-  /* Mobile + JS: the tab bar docks to the bottom edge — one-handed thumb reach
-     at the table. (No-JS keeps the in-flow anchor bar at the top.) */
+  /* Mobile + JS: the tab bar stays sticky at the top (owner ruling 2026-09-25 —
+     guests missed brunch/cocktails when it docked to the bottom), laid out as
+     equal columns so all six menus are in view at once. The dietary toggles
+     take the bottom dock instead (filter row, below). No-JS keeps the
+     scrolling anchor bar. */
   @media (max-width: 767px) {
-    .js-menu .menu-tabs {
-      position: fixed;
-      inset-block-start: auto;
-      inset-block-end: 0;
-      inset-inline: 0;
-      border-block-end: none;
-      border-block-start: 1px solid var(--menu-hairline);
-      box-shadow: var(--menu-bar-shadow);
-      padding-block-end: env(safe-area-inset-bottom, 0px);
-    }
     .js-menu .menu-tabs-list {
       gap: 0;
       padding-inline: 0;
-      overflow: visible;
+      /* no edge fade: it would wash out the first tab's active underline */
+      mask-image: none;
     }
+    /* equal columns, floored at the longest word so no label is ever cut
+       ("קוקטיילים" lost its last letter at ≤375px). When the floors can't fit
+       (long Russian labels), the base list's overflow-x lets the bar scroll. */
     .js-menu .menu-tabs-item {
       flex: 1 1 0;
-      min-inline-size: 0;
     }
     .js-menu .menu-tab {
       inline-size: 100%;
-      min-block-size: 56px;
       padding: var(--space-1);
       font-size: var(--text-sm);
       line-height: 1.15;
       white-space: normal;
       text-align: center;
       text-wrap: balance;
-      border-block-end: none;
-      border-block-start: 3px solid transparent;
       /* was `anywhere` — broke single words mid-letter ("קוקטיילים" ->
          "קוקטיילי"/"ם"); `normal` still lets 2-word labels wrap at the space,
          which is all this was ever meant to do. */
@@ -288,11 +281,7 @@ const menuSchema = {
       text-overflow: ellipsis;
       min-inline-size: 0;
     }
-    .js-menu .menu-tab.is-active {
-      /* R7.1-C Option A: cotto state indicator, matches the desktop tab bar */
-      border-block-start-color: var(--color-warm-surface);
-    }
-    /* keep the last items clear of the docked bar */
+    /* keep the last items clear of the docked dietary bar */
     .js-menu .menu-page {
       padding-block-end: calc(var(--space-24) + env(safe-area-inset-bottom, 0px));
     }
@@ -306,13 +295,6 @@ const menuSchema = {
     z-index: 20;
     background: var(--color-background);
     padding-block: var(--space-2);
-  }
-  /* JS + mobile: tabs dock to the bottom, so the filter row is the sole
-     top-sticky element — it only needs to clear the nav bar itself */
-  @media (max-width: 767px) {
-    .js-menu .menu-filters {
-      inset-block-start: var(--nav-bar-height);
-    }
   }
   @media (min-width: 768px) {
     .menu-filters,
@@ -383,6 +365,55 @@ const menuSchema = {
     .cat-chips {
       flex-wrap: wrap;
       justify-content: center;
+    }
+  }
+
+  /* Mobile + JS: the dietary toggles leave the top row for a dock on the
+     bottom edge (one-handed thumb reach at the table); the category chips keep
+     the top row. The dock is position: fixed inside the track, and a mask on
+     any ancestor would clip it — so the scrolling and the edge fade move from
+     the track down to the chip strip. */
+  @media (max-width: 767px) {
+    .js-menu .filters-track {
+      padding-inline: 0;
+      overflow: visible;
+      mask-image: none;
+    }
+    .js-menu .filters-cats {
+      flex: 1 1 auto;
+      min-inline-size: 0;
+      padding-inline: var(--space-6);
+      overflow-x: auto;
+      scrollbar-width: none;
+      mask-image: linear-gradient(
+        90deg,
+        transparent,
+        currentColor var(--space-4),
+        currentColor calc(100% - var(--space-4)),
+        transparent
+      );
+    }
+    .js-menu .filters-cats::-webkit-scrollbar {
+      display: none;
+    }
+    .js-menu .filters-sep {
+      display: none;
+    }
+    .js-menu .filters-dietary {
+      position: fixed;
+      z-index: 30;
+      inset-inline: 0;
+      inset-block-end: 0;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+      background: var(--color-background);
+      border-block-start: 1px solid var(--menu-hairline);
+      box-shadow: var(--menu-bar-shadow);
+    }
+    /* only the restaurant tab has chips — collapse the empty top row elsewhere */
+    .js-menu .menu-filters:not([data-active-tab='restaurant']) {
+      padding-block: 0;
     }
   }
 
