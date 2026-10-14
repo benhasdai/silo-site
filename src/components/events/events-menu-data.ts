@@ -149,11 +149,11 @@ const HE_EVENT_PACKAGES: EventPackage[] = [
     id: 'brunch',
     photo: '/media/photos/event-brunch.jpg',
     alt: 'הרמת כוסות מימוזה מעל שולחן בראנץ׳ ערוך',
-    tag: 'שעות הבוקר',
+    tag: 'בכל בוקר · בתיאום מראש',
     title: 'בראנץ׳ חגיגי',
     body: 'בוקר חגיגי על שולחנות ערוכים — מאפים חמים, ביצים, סלטים ומימוזה. הדרך הכי טעימה להתחיל חגיגה, מזל טוב או סתם שבת טובה במיוחד.',
     intro:
-      'צ׳או! מתרגשים לארח אתכם לסעודה איטלקית! בהשראת תפריט הבוקר שלנו נגיש בנדיבות צ׳קטי אינסופי שמוגש, מנות חמות, מתוקים, שתיה קלה וחמה, ויין טוב.',
+      'צ׳או! מתרגשים לארח אתכם לסעודה איטלקית! בהשראת תפריט הבוקר שלנו נגיש בנדיבות צ׳קטי אינסופי, מנות חמות, מתוקים, שתיה קלה וחמה, ויין טוב. בלי עיקרית אישית: כל המנות לכל האורחים, בבופה או בהגשה למרכז השולחן, לפי בחירתכם והזמינות בתאריך.',
     pricePp: 270,
     priceKids: 135,
     sections: [
@@ -293,11 +293,11 @@ const EN_EVENT_PACKAGES: EventPackage[] = [
     id: 'brunch',
     photo: '/media/photos/event-brunch.jpg',
     alt: 'Raising mimosa glasses over a set brunch table',
-    tag: 'Morning hours',
+    tag: 'Any morning · by arrangement',
     title: 'Festive Brunch',
     body: 'A festive morning at set tables — warm pastries, eggs, salads and mimosas. The tastiest way to start a celebration, a mazal tov, or simply an especially good Saturday.',
     intro:
-      "Ciao! We're excited to host you for an Italian feast! Inspired by our breakfast menu, we'll generously serve an endless buffet spread, hot dishes, sweets, soft and hot drinks, and good wine.",
+      "Ciao! We're excited to host you for an Italian feast! Inspired by our breakfast menu, we'll generously serve endless cicchetti, hot dishes, sweets, soft and hot drinks, and good wine. No individual main course: every dish is for the whole table, as a buffet or served to the centre of the table, your choice subject to availability on the date.",
     pricePp: 270,
     priceKids: 135,
     sections: [
@@ -437,11 +437,11 @@ const RU_EVENT_PACKAGES: EventPackage[] = [
     id: 'brunch',
     photo: '/media/photos/event-brunch.jpg',
     alt: 'Поднятые бокалы мимозы над накрытым столом для бранча',
-    tag: 'Утренние часы',
+    tag: 'Каждое утро · по договорённости',
     title: 'Праздничный бранч',
     body: 'Праздничное утро за накрытыми столами — тёплая выпечка, яйца, салаты и мимоза. Самый вкусный способ начать праздник, мазл тов или просто особенно хорошую субботу.',
     intro:
-      'Чао! Мы рады принять вас на итальянский ужин! Вдохновляясь нашим утренним меню, мы щедро подадим бесконечный шведский стол, горячие блюда, десерты, безалкогольные и горячие напитки, а также хорошее вино.',
+      'Чао! Мы рады принять вас на итальянское застолье! Вдохновляясь нашим утренним меню, мы щедро подадим бесконечные чикетти, горячие блюда, десерты, безалкогольные и горячие напитки, а также хорошее вино. Без индивидуального основного блюда: все блюда — на весь стол, в формате шведского стола или с подачей в центр стола, на ваш выбор и в зависимости от возможностей в выбранную дату.',
     pricePp: 270,
     priceKids: 135,
     sections: [

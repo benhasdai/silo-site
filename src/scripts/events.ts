@@ -1,7 +1,8 @@
 // R3 — Events page behavior.
-// 1) Package folds: native <details> enhanced with a smooth WAAPI height
-//    animation (transform-free content, no layout dependence for visibility),
-//    deep links (/events#private-room opens its fold), Lenis scroll into view.
+// 1) Package jump bar: every package menu is always open (owner ruling
+//    2026-10-14); the sticky bar above them scrolls to a package with Lenis,
+//    keeps deep links (/events#brunch) landing below both sticky bars, and
+//    highlights the package currently in view. No-JS: plain anchor links.
 // 2) Whispered motion (GSAP): hero intro + photo drift inside the cards.
 //    Fully skipped under prefers-reduced-motion — nothing is hidden by CSS.
 // Uses the shared Lenis singleton (window.__lenis) per contracts.md.
@@ -16,59 +17,85 @@ function getLenis(): LenisLike | undefined {
   return (window as unknown as { __lenis?: LenisLike }).__lenis;
 }
 
-/* ---------------------------------------------------------------- folds */
+/* ---------------------------------------------------------- package nav */
 
-function scrollToEl(el: HTMLElement): void {
-  const lenis = getLenis();
-  if (lenis) lenis.scrollTo(el, { offset: -24 });
-  else el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+/** Where a package lands under the two sticky bars: its CSS scroll-margin,
+ *  the one source for both native anchors and Lenis (which subtracts it). */
+function landingLine(el: HTMLElement): number {
+  return Number.parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
 }
 
-function initFolds(): void {
-  const folds = Array.from(document.querySelectorAll<HTMLDetailsElement>('[data-event-fold]'));
-  if (!folds.length) return;
+function scrollToPackage(el: HTMLElement, immediate = false): void {
+  const lenis = getLenis();
+  if (lenis) lenis.scrollTo(el, { immediate });
+  else el.scrollIntoView({ behavior: immediate || reducedMotion ? 'auto' : 'smooth', block: 'start' });
+}
 
-  for (const fold of folds) {
-    const panel = fold.querySelector<HTMLElement>('[data-fold-panel]');
-    const summary = fold.querySelector<HTMLElement>('summary');
-    if (!panel || !summary) continue;
+function initPackageNav(): void {
+  const nav = document.querySelector<HTMLElement>('[data-package-nav]');
+  if (!nav) return;
+  const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-package-link]'));
+  const packages = links
+    .map((link) => document.getElementById(link.dataset.packageLink ?? ''))
+    .filter((el): el is HTMLElement => el !== null);
+  if (!packages.length) return;
 
-    summary.addEventListener('click', (event) => {
-      if (reducedMotion || typeof panel.animate !== 'function') return; // native toggle
+  const setActive = (id: string): void => {
+    for (const link of links) {
+      const on = link.dataset.packageLink === id;
+      link.classList.toggle('is-active', on);
+      if (on) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  };
+
+  for (const link of links) {
+    link.addEventListener('click', (event) => {
+      const target = document.getElementById(link.dataset.packageLink ?? '');
+      if (!target) return;
       event.preventDefault();
-
-      if (fold.open) {
-        // closing: animate shut, THEN remove [open] (native removal is instant)
-        const h = panel.offsetHeight;
-        const anim = panel.animate(
-          [{ height: `${h}px`, opacity: 1 }, { height: '0px', opacity: 0 }],
-          { duration: 320, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
-        );
-        anim.onfinish = () => {
-          fold.open = false;
-        };
-      } else {
-        fold.open = true; // native open is instant — then animate the reveal
-        const h = panel.offsetHeight;
-        panel.animate(
-          [{ height: '0px', opacity: 0 }, { height: `${h}px`, opacity: 1 }],
-          { duration: 420, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
-        );
-      }
+      history.replaceState(null, '', `#${target.id}`);
+      setActive(target.id);
+      scrollToPackage(target);
     });
   }
 
-  // deep link: /events#<package-id> opens that fold and scrolls to it
-  const route = (): void => {
-    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
-    if (!id) return;
-    const fold = document.getElementById(id) as HTMLDetailsElement | null;
-    if (!fold || !fold.hasAttribute('data-event-fold')) return;
-    fold.open = true;
-    requestAnimationFrame(() => scrollToEl(fold));
+  // highlight: the last package whose top has reached its landing line
+  const update = (): void => {
+    let current = packages[0];
+    for (const pkg of packages) {
+      if (pkg.getBoundingClientRect().top <= landingLine(pkg) + 1) current = pkg;
+    }
+    setActive(current.id);
   };
-  route();
-  window.addEventListener('hashchange', route);
+  let queued = false;
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        update();
+      });
+    },
+    { passive: true },
+  );
+  update();
+
+  // deep link: /events#<package-id> lands on that package below the bars.
+  // On arrival, wait for `load` so the layout's Lenis exists and the page is
+  // laid out (the last package sits ~7000px down), then jump without animation.
+  const route = (immediate: boolean): void => {
+    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    const target = packages.find((pkg) => pkg.id === id);
+    if (!target) return;
+    setActive(target.id);
+    requestAnimationFrame(() => scrollToPackage(target, immediate));
+  };
+  if (document.readyState === 'complete') route(true);
+  else window.addEventListener('load', () => route(true), { once: true });
+  window.addEventListener('hashchange', () => route(false));
 }
 
 /* ---------------------------------------------------------------- motion */
@@ -110,5 +137,5 @@ function initMotion(): void {
   });
 }
 
-initFolds();
+initPackageNav();
 initMotion();

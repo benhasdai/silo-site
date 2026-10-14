@@ -11,7 +11,7 @@ interface EventsStrings {
   pageDescription: string;
   heroTitle: string;
   showcaseAriaLabel: string;
-  viewFullMenu: string;
+  packageNavAriaLabel: string;
   drinksHeading: string;
   perGuest: string;
   kidsUpTo8: string;
@@ -26,7 +26,7 @@ export const events: Record<Locale, EventsStrings> = {
       'אירועים פרטיים בסילו חולון: חדר פרטי, אירוע גדול עד 150 אורחים ובראנץ׳ חגיגי. תפריטי אירועים, מחירים וליווי אישי עד האירוע.',
     heroTitle: 'אירוע צבעוני, מרגש ובלתי נשכח',
     showcaseAriaLabel: 'אפשרויות אירוח',
-    viewFullMenu: 'לתפריט המלא',
+    packageNavAriaLabel: 'מעבר בין אפשרויות האירוח',
     drinksHeading: 'שתייה',
     perGuest: 'לאורח',
     kidsUpTo8: 'לבמביני עד גיל 8',
@@ -39,7 +39,7 @@ export const events: Record<Locale, EventsStrings> = {
       'Private events at SILO Holon: a private room, a large event for up to 150 guests, and a festive brunch. Event menus, pricing and personal support through the event.',
     heroTitle: 'Vivid. Moving. Unforgettable.',
     showcaseAriaLabel: 'Hosting options',
-    viewFullMenu: 'View full menu',
+    packageNavAriaLabel: 'Jump between hosting options',
     drinksHeading: 'Drinks',
     perGuest: 'per guest',
     kidsUpTo8: 'for kids up to age 8',
@@ -53,7 +53,7 @@ export const events: Record<Locale, EventsStrings> = {
       'Частные мероприятия в SILO Холон: отдельный зал, крупное мероприятие до 150 гостей и праздничный бранч. Меню мероприятий, цены и личное сопровождение до самого события.',
     heroTitle: 'Яркое, трогательное, незабываемое событие',
     showcaseAriaLabel: 'Варианты проведения мероприятий',
-    viewFullMenu: 'Смотреть полное меню',
+    packageNavAriaLabel: 'Переход между вариантами проведения',
     drinksHeading: 'Напитки',
     perGuest: 'с гостя',
     kidsUpTo8: 'для детей до 8 лет',
