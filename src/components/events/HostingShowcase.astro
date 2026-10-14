@@ -1,12 +1,14 @@
 ---
-// R3 — the events page body: three hosting types, each a real photograph and an
-// UNFOLDING full package menu (native <details> = no-JS + keyboard for free;
-// events.ts adds smooth height, deep links and Lenis scroll). All package info
-// lives INSIDE its section (user ruling); WhatsApp CTA per package replaces the
-// old inquiry form as the conversion path.
+// R3 — the events page body: three hosting types, each a real photograph and
+// its full package menu. All package info lives INSIDE its section (user
+// ruling); WhatsApp CTA per package replaces the old inquiry form as the
+// conversion path.
+// Owner ruling 2026-10-14: every menu is always open (no click to reveal),
+// with a sticky jump bar between the packages. No-JS baseline: plain anchor
+// links; events.ts adds Lenis scroll and the active-package highlight.
 // R9 i18n — parameterized by locale: package copy from getEventPackages(locale),
-// chrome strings (aria-label, "view full menu", "per guest", WhatsApp CTA text)
-// from the events strings module.
+// chrome strings (aria-labels, "per guest", WhatsApp CTA text) from the events
+// strings module.
 import { WHATSAPP_URL } from '../../lib/links';
 import { getEventPackages, menuItemIndex, resolveDish } from './events-menu-data';
 import { events } from '../../i18n/pages/events';
@@ -22,29 +24,33 @@ const byId = menuItemIndex();
 const packages = getEventPackages(locale);
 ---
 <section class="showcase" aria-label={t.showcaseAriaLabel}>
+  <nav class="show-nav" aria-label={t.packageNavAriaLabel} data-package-nav>
+    <ul class="show-nav-list" role="list">
+      {packages.map((pkg) => (
+        <li class="show-nav-item">
+          <a class="show-nav-link" href={`#${pkg.id}`} data-package-link={pkg.id}>{pkg.title}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
   <div class="container">
     <div class="show-list">
       {packages.map((pkg, i) => (
-        <details class="show-row" id={pkg.id} data-event-fold>
-          <summary class="show-summary">
+        <article class="show-row" id={pkg.id} aria-labelledby={`${pkg.id}-title`} data-event-package>
+          <div class="show-summary">
             <span class={`show-media${i % 2 === 1 ? ' show-media-flip' : ''}`}>
               <img src={pkg.photo} alt={pkg.alt} loading="lazy" decoding="async" width="1200" height="900" />
             </span>
-            <span class="show-body">
+            <div class="show-body">
               <span class="badge-warm">{pkg.tag}</span>
-              <span class="show-title" role="heading" aria-level="2">{pkg.title}</span>
-              <span class="show-desc">{pkg.body}</span>
-              <span class="show-price"><span class="notranslate">{pkg.pricePp} ₪</span> {t.perGuest}</span>
-              <span class="show-open btn btn-outline" aria-hidden="true">
-                {t.viewFullMenu}
-                <svg class="show-chev" width="14" height="14" viewBox="0 0 20 20" fill="none">
-                  <path d="M4 8l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </span>
-          </summary>
+              <h2 class="show-title" id={`${pkg.id}-title`}>{pkg.title}</h2>
+              <p class="show-desc">{pkg.body}</p>
+              <p class="show-price"><span class="notranslate">{pkg.pricePp} ₪</span> {t.perGuest}</p>
+            </div>
+          </div>
 
-          <div class="fold" data-fold-panel>
+          <div class="fold">
             <div class="fold-inner">
               <p class="fold-intro">{pkg.intro}</p>
 
@@ -95,7 +101,7 @@ const packages = getEventPackages(locale);
               </p>
             </div>
           </div>
-        </details>
+        </article>
       ))}
     </div>
   </div>
@@ -103,10 +109,12 @@ const packages = getEventPackages(locale);
 
 <style>
   .showcase {
+    --show-nav-h: 52px; /* jump-bar row height; also feeds the anchor landing */
     padding-block: var(--space-8) var(--space-16);
   }
   @media (min-width: 768px) {
     .showcase {
+      --show-nav-h: 3.5rem;
       padding-block: var(--space-12) var(--space-24);
     }
   }
@@ -116,25 +124,84 @@ const packages = getEventPackages(locale);
     gap: var(--space-12);
   }
 
-  .show-row {
-    scroll-margin-block-start: var(--space-8);
+  /* ---- sticky jump bar between the packages (same look as the menu tabs) ---- */
+  .show-nav {
+    position: sticky;
+    inset-block-start: var(--nav-bar-height);
+    z-index: 30;
+    background: var(--color-background);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); /* = --menu-hairline */
+    margin-block-end: var(--space-8);
+  }
+  .show-nav-list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    max-inline-size: var(--content-max);
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+  .show-nav-item {
+    flex: 1 1 0;
+  }
+  .show-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--show-nav-h);
+    padding: var(--space-2) var(--space-1);
+    text-align: center;
+    line-height: 1.15;
+    color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
+    font-weight: var(--weight-heading);
+    font-size: var(--text-sm);
+    border-block-end: 3px solid transparent;
+    transition:
+      color var(--dur-fast) var(--ease-smooth),
+      border-color var(--dur-fast) var(--ease-smooth);
+  }
+  .show-nav-link:hover {
+    color: var(--color-text);
+  }
+  /* state indicator in cotto, like .menu-tab.is-active (R7.1-C Option A) */
+  .show-nav-link.is-active {
+    color: var(--color-text);
+    border-block-end-color: var(--color-warm-surface);
+  }
+  .show-nav-link:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: -2px;
+  }
+  @media (min-width: 768px) {
+    .show-nav {
+      margin-block-end: var(--space-12);
+    }
+    .show-nav-list {
+      gap: var(--space-6);
+      padding-inline: var(--space-6);
+    }
+    .show-nav-item {
+      flex: 0 0 auto;
+    }
+    .show-nav-link {
+      padding-inline: var(--space-4);
+      font-size: var(--text-base);
+      white-space: nowrap;
+    }
   }
 
-  /* ---- the card (summary) ---- */
+  /* anchors land below the site bar + the jump bar (+ its hairline). Lenis
+     honours this too, and events.ts reads it for the active highlight. */
+  .show-row {
+    scroll-margin-block-start: calc(var(--nav-bar-height) + var(--show-nav-h) + 1px + var(--space-6));
+  }
+
+  /* ---- the card ---- */
   .show-summary {
-    list-style: none;
-    cursor: pointer;
     display: grid;
     gap: var(--space-6);
     align-items: center;
-    border-radius: var(--radius-lg);
-  }
-  .show-summary::-webkit-details-marker {
-    display: none;
-  }
-  .show-summary:focus-visible {
-    outline: 2px solid var(--color-text);
-    outline-offset: 4px;
   }
 
   .show-media {
@@ -143,21 +210,13 @@ const packages = getEventPackages(locale);
     border-radius: var(--radius-lg);
     aspect-ratio: 4 / 3;
   }
-  /* GSAP owns the img transform (scroll drift) — hover feedback lives on the
-     title link colour instead, so CSS and scrub never fight. */
+  /* GSAP owns the img transform (scroll drift). */
   .show-media img {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
     will-change: transform;
   }
-  /* the whole card is the control, so hovering it lights the button */
-  .show-summary:hover .show-open,
-  .show-summary:focus-visible .show-open {
-    background: var(--color-text);
-    color: var(--color-background);
-  }
-
   .show-body {
     display: flex;
     flex-direction: column;
@@ -165,30 +224,19 @@ const packages = getEventPackages(locale);
     gap: var(--space-3);
   }
   .show-title {
-    display: block;
+    margin: 0;
     font-weight: var(--weight-display);
     font-size: var(--text-xl);
     line-height: 1.15;
   }
   .show-desc {
-    display: block;
+    margin: 0;
     max-inline-size: 46ch;
     color: var(--color-on-ground-soft); /* R7.1-C: sage fails on espresso */
   }
   .show-price {
+    margin: 0;
     font-weight: var(--weight-heading);
-  }
-  /* the way into the menu — a real button, not a hint. Shape and colour come
-     from .btn/.btn-outline; outline keeps the filled red for the WhatsApp CTA
-     inside the fold, so the two never compete. */
-  .show-open {
-    margin-block-start: var(--space-2);
-  }
-  .show-chev {
-    transition: transform var(--dur-base) var(--ease-smooth);
-  }
-  .show-row[open] .show-chev {
-    transform: rotate(180deg);
   }
 
   @media (min-width: 768px) {
@@ -202,10 +250,7 @@ const packages = getEventPackages(locale);
     }
   }
 
-  /* ---- the unfolded menu ---- */
-  .fold {
-    overflow: hidden;
-  }
+  /* ---- the package menu (always open) ---- */
   .fold-inner {
     padding-block: var(--space-8) var(--space-4);
     max-inline-size: 44rem;
