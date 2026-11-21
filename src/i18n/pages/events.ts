@@ -16,6 +16,9 @@ interface EventsStrings {
   perGuest: string;
   kidsUpTo8: string;
   ctaLabel: (packageTitle: string) => string;
+  /** Owner-worded WhatsApp opener per package id (owner, 2026-11-21). */
+  inquiryMessages: Record<string, string>;
+  inquiryMessage: (packageId: string) => string;
 }
 
 export const events: Record<Locale, EventsStrings> = {
@@ -30,6 +33,16 @@ export const events: Record<Locale, EventsStrings> = {
     perGuest: 'לאורח',
     kidsUpTo8: 'לבמביני עד גיל 8',
     ctaLabel: (packageTitle) => `דברו איתנו על ${packageTitle}`,
+    inquiryMessages: {
+      'private-room': 'היי סילו, אשמח לשמוע על אירוע בחדר הפרטי.',
+      'large-event': 'היי סילו, אשמח לשמוע על אירוע במסעדה.',
+      brunch: 'היי סילו, אשמח לשמוע על אירוע בראנץ.',
+    },
+    inquiryMessage(packageId) {
+      const message = this.inquiryMessages[packageId];
+      if (!message) throw new Error(`No events inquiry message for package "${packageId}" (he)`);
+      return message;
+    },
   },
   en: {
     pageTitle: 'Events at SILO — A colorful, moving, unforgettable event',
@@ -42,6 +55,16 @@ export const events: Record<Locale, EventsStrings> = {
     perGuest: 'per guest',
     kidsUpTo8: 'for kids up to age 8',
     ctaLabel: (packageTitle) => `Chat with us about ${packageTitle}`,
+    inquiryMessages: {
+      'private-room': "Hi SILO, I'd love to hear about an event in the private room.",
+      'large-event': "Hi SILO, I'd love to hear about an event at the restaurant.",
+      brunch: "Hi SILO, I'd love to hear about a brunch event.",
+    },
+    inquiryMessage(packageId) {
+      const message = this.inquiryMessages[packageId];
+      if (!message) throw new Error(`No events inquiry message for package "${packageId}" (en)`);
+      return message;
+    },
   },
   ru: {
     pageTitle: 'Мероприятия в SILO — яркое, трогательное, незабываемое событие',
@@ -54,5 +77,15 @@ export const events: Record<Locale, EventsStrings> = {
     perGuest: 'с гостя',
     kidsUpTo8: 'для детей до 8 лет',
     ctaLabel: (packageTitle) => `Напишите нам про «${packageTitle}»`,
+    inquiryMessages: {
+      'private-room': 'Привет, SILO! Хочу узнать о мероприятии в отдельном зале.',
+      'large-event': 'Привет, SILO! Хочу узнать о мероприятии в ресторане.',
+      brunch: 'Привет, SILO! Хочу узнать о мероприятии-бранче.',
+    },
+    inquiryMessage(packageId) {
+      const message = this.inquiryMessages[packageId];
+      if (!message) throw new Error(`No events inquiry message for package "${packageId}" (ru)`);
+      return message;
+    },
   },
 };
