@@ -2,14 +2,15 @@
 // R3 — the events page body: three hosting types, each a real photograph and
 // its full package menu. All package info lives INSIDE its section (user
 // ruling); WhatsApp CTA per package replaces the old inquiry form as the
-// conversion path.
+// conversion path. Owner ruling 2026-11-21: every package CTA opens the
+// WhatsApp Business events short link (WHATSAPP_EVENTS_URL).
 // Owner ruling 2026-10-14: every menu is always open (no click to reveal),
 // with a sticky jump bar between the packages. No-JS baseline: plain anchor
 // links; events.ts adds Lenis scroll and the active-package highlight.
 // R9 i18n — parameterized by locale: package copy from getEventPackages(locale),
 // chrome strings (aria-labels, "per guest", WhatsApp CTA text) from the events
 // strings module.
-import { WHATSAPP_URL } from '../../lib/links';
+import { WHATSAPP_EVENTS_URL } from '../../lib/links';
 import { getEventPackages, menuItemIndex, resolveDish } from './events-menu-data';
 import { events } from '../../i18n/pages/events';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
@@ -94,7 +95,7 @@ const packages = getEventPackages(locale);
               <p class="fold-cta">
                 <a
                   class="btn btn-primary"
-                  href={WHATSAPP_URL(t.whatsappMessage(pkg.title, pkg.pricePp))}
+                  href={WHATSAPP_EVENTS_URL}
                   target="_blank"
                   rel="noopener"
                 >{t.ctaLabel(pkg.title)}</a>
