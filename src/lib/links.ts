@@ -44,6 +44,12 @@ export function WHATSAPP_URL(text?: string): string {
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
 
+/** WhatsApp Business short link for event inquiries (owner, 2026-11-21): every
+ *  "talk to us" CTA on the events page opens this link. A wa.me/message/ short
+ *  link carries the greeting configured in the WhatsApp Business app and does
+ *  not take a `?text=` prefill, so it is used as-is. */
+export const WHATSAPP_EVENTS_URL = 'https://wa.me/message/LNWJQ2DAETWEG1';
+
 export const TEL_URL = 'tel:03-573-3315';
 export const TEL_DISPLAY = '03-573-3315';
 
